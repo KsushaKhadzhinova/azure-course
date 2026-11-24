@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Архитектурный конспект: Службы реляционных баз данных в Azure</title>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+    <script>mermaid.initialize({startOnLoad:true, theme: 'default'});</script>
+    <style>
+        /* Базовые стили: Светлая тема, черный текст, Times New Roman 14px */
+        body {
+            font-family: 'Times New Roman', Times, serif;
+            font-size: 14px;
+            color: #000000;
+            background-color: #FAFAFA;
+            line-height: 1.6;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        /* Заголовки */
+        h1, h2, h3, h4 {
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            color: #2C3E50;
+            margin-top: 1.5em;
+            margin-bottom: 0.5em;
+        }
+        h1 { 
+            font-size: 30px; 
+            text-transform: uppercase; 
+            border-bottom: 3px solid #E74C3C; 
+            padding-bottom: 12px; 
+            color: #C0392B; 
+            text-align: center;
+        }
+        h2 { 
+            font-size: 24px; 
+            color: #2980B9; 
+            border-left: 5px solid #3498DB; 
+            padding-left: 15px; 
+            background-color: #EBF5FB;
+            padding: 10px 15px;
+            margin-top: 50px;
+        }
+        h3 { 
+            font-size: 18px; 
+            color: #8E44AD; 
+            font-style: italic; 
+            font-weight: bold;
+        }
+
+        /* Выделение кода */
+        code { 
+            font-family: 'Courier New', Courier, monospace; 
+            background-color: #EAECEE; 
+            padding: 3px 6px; 
+            border-radius: 4px; 
+            color: #C0392B; 
+            font-weight: bold; 
+            font-size: 13px;
+        }
+
+        /* Блоки контента */
+        .tldr-box { 
+            background-color: #E8F8F5; 
+            border: 1px solid #1ABC9C; 
+            padding: 20px; 
+            border-radius: 8px; 
+            margin-bottom: 25px; 
+            font-size: 15px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+        .analogy-box { 
+            background-color: #FEF9E7; 
+            border-left: 5px solid #F1C40F; 
+            padding: 20px; 
+            margin-bottom: 25px; 
+            border-radius: 0 8px 8px 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        .deep-dive { 
+            background-color: #F8F9F9; 
+            border: 1px solid #D5DBDB; 
+            padding: 20px; 
+            border-radius: 8px; 
+            margin: 25px 0; 
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+        .best-practice { 
+            background-color: #FDEDEC; 
+            border-left: 5px solid #E74C3C; 
+            padding: 20px; 
+            margin: 20px 0; 
+            border-radius: 0 8px 8px 0;
+        }
+
+        /* Таблицы */
+        table { 
+            width: 100%; 
+            border-collapse: collapse; 
+            margin: 25px 0; 
+            font-family: 'Segoe UI', sans-serif; 
+            font-size: 14px; 
+            background-color: #FFFFFF;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        th, td { 
+            border: 1px solid #BDC3C7; 
+            padding: 15px; 
+            text-align: left; 
+        }
+        th { 
+            background-color: #34495E; 
+            color: #FFFFFF; 
+            font-weight: 600;
+        }
+        tr:nth-child(even) { background-color: #F8F9F9; }
+        tr:hover { background-color: #EBF5FB; }
+
+        /* Контейнеры для графики */
+        .visual-container { 
+            text-align: center; 
+            background: #FFFFFF; 
+            padding: 25px; 
+            border: 1px solid #EAEDED; 
+            border-radius: 12px; 
+            margin: 30px 0; 
+            box-shadow: 0 6px 12px rgba(0,0,0,0.08); 
+        }
+        .caption {
+            font-family: 'Arial', sans-serif;
+            font-size: 13px;
+            color: #7F8C8D;
+            margin-top: 15px;
+            font-style: italic;
+        }
+        
+        /* Итоговый блок */
+        .summary-box {
+            background: linear-gradient(135deg, #F9EBEA 0%, #FDEDEC 100%);
+            border: 1px solid #F5B7B1;
+            padding: 30px;
+            border-radius: 12px;
+            text-align: center;
+            margin-top: 50px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+        }
+        .xp-badge {
+            display: inline-block;
+            background-color: #E74C3C;
+            color: #FFFFFF;
+            font-weight: bold;
+            font-family: 'Segoe UI', sans-serif;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 16px;
+            margin: 15px 0;
+            box-shadow: 0 2px 5px rgba(231, 76, 60, 0.4);
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Архитектурный конспект: Службы баз данных в Azure</h1>
+
+    <!-- БЛОК 1: СЕМЕЙСТВО AZURE SQL -->
+    <h2>Модуль 1. Семейство служб Azure SQL (Microsoft SQL Server)</h2>
+
+    <div class="tldr-box">
+        <p><strong>TL;DR:</strong> Azure предлагает 4 варианта развертывания SQL Server. Ваш выбор зависит от одной вещи: вы <em>мигрируете старое приложение</em> или <em>создаете новое</em>? Чем больше аспектов инфраструктуры Azure берет на себя (PaaS), тем меньше ваших затрат на администрирование.</p>
+    </div>
+
+    <div class="analogy-box">
+        <strong>Аналогия из жизни (Жилищный вопрос):</strong><br>
+        <ul style="margin-top: 10px;">
+            <li><strong>SQL Server на Виртуальной машине (IaaS):</strong> <em>Аренда пустого дома.</em> У вас есть доступ к операционной системе (ОС Windows/Linux). Вы сами ставите антивирусы, обновляете ОС и делаете бэкапы. Максимум контроля, но и максимум головной боли.</li>
+            <li><strong>Управляемый экземпляр (Managed Instance - PaaS):</strong> <em>Апартаменты с обслуживанием.</em> Вы не имеете доступа к ОС, но база выглядит на 100% как ваш старый локальный сервер. Работают старые функции (Linked Servers, SQL Agent). Идеально для "бесшовного" переезда в облако без переписывания кода (Lift-and-Shift).</li>
+            <li><strong>База данных SQL Azure (Single Database - PaaS):</strong> <em>Номер в смарт-отеле.</em> Вы получаете только саму базу. Все ресурсы изолированы, масштабирование происходит в 1 клик. Идеально для современных микросервисов (Cloud-Native).</li>
+            <li><strong>Эластичный пул (Elastic Pool):</strong> <em>Корпоративный тариф.</em> У вас 100 баз данных (например, SaaS-продукт для разных клиентов). Они не активны одновременно. Вы покупаете общий "пул ресурсов" (CPU/RAM), и базы делят его между собой. Колоссальная экономия!</li>
+        </ul>
+    </div>
+
+    <div class="deep-dive">
+        <h3>Под капотом (Deep Dive): Вычислительные уровни (DTU vs vCore)</h3>
+        <p>При создании базы в Azure вам предложат выбрать модель оплаты и производительности:</p>
+        <ul>
+            <li><strong>Модель DTU (Database Transaction Unit):</strong> "Комплексный обед". Процессор, память и скорость диска связаны в одну метрику (DTU). Дешево, просто, идеально для старта.</li>
+            <li><strong>Модель vCore (Виртуальные ядра):</strong> "Шведский стол". Вы отдельно выбираете количество ядер CPU и отдельно размер/скорость диска. Нужна для тяжелых корпоративных нагрузок и прозрачного планирования бюджета.</li>
+            <li><strong>Serverless (Бессерверная конфигурация):</strong> Уникальная фича Azure SQL Database. База тарифицируется посекундно. Если ночью к ней нет обращений — она засыпает (ставится на автопаузу), и вы платите только за хранение гигабайтов на диске!</li>
+        </ul>
+    </div>
+
+    <!-- БЛОК 2: ОТКРЫТЫЕ БД В AZURE -->
+    <h2>Модуль 2. Базы данных с открытым кодом (MySQL и PostgreSQL)</h2>
+    <div class="visual-container">
+        <div class="mermaid">
+            graph TD
+                A[Миграция реляционной БД в Azure] --> B{На чем написан ваш проект?}
+                B -- .NET / C# / MS SQL --> C[Azure SQL Database]
+                B -- PHP / LAMP Stack / Web --> D[Azure Database for MySQL]
+                B -- Python / GIS / Сложная логика --> E[Azure Database for PostgreSQL]
+                
+                C -.-> F((PaaS Преимущества))
+                D -.-> F
+                E -.-> F
+                
+                F --> G[Авто-бэкапы до 35 дней]
+                F --> H[Встроенная отказоустойчивость]
+                F --> I[Оплата по мере использования]
+        </div>
+        <div class="caption">Рис 1. Дерево принятия решений по выбору СУБД в Azure. Главный принцип: выбирайте то, что уже использует ваша команда, облако обеспечит масштабируемость.</div>
+    </div>
+
+    <h3>Trade-offs (MySQL vs PostgreSQL)</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>Характеристика</th>
+                <th>Azure Database for MySQL</th>
+                <th>Azure Database for PostgreSQL</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><strong>Парадигма</strong></td>
+                <td>Чисто реляционная СУБД.</td>
+                <td>Объектно-реляционная СУБД (поддерживает массивы, JSONB, наследование).</td>
+            </tr>
+            <tr>
+                <td><strong>Расширяемость</strong></td>
+                <td>Низкая (стандартные функции).</td>
+                <td>Очень высокая. Плагины подгружаются прямо в ядро (поддерживается безопасный список расширений в Azure).</td>
+            </tr>
+            <tr>
+                <td><strong>Бизнес-применение</strong></td>
+                <td>Быстрые веб-сайты (WordPress, Magento), каталоги, простые транзакции.</td>
+                <td>Сложная бизнес-логика, гео-отслеживание такси (PostGIS), финансовая аналитика, ERP-системы.</td>
+            </tr>
+            <tr>
+                <td><strong>Компромисс (Минус)</strong></td>
+                <td>Плохо справляется с тяжелой аналитикой и сложными JOIN.</td>
+                <td>Более высокое потребление памяти на каждое подключение; сложнее в администрировании.</td>
+            </tr>
+        </tbody>
+    </table>
+
+
+    <!-- БЛОК 3: ПРАКТИКА (LAB DEEP DIVE) -->
+    <h2>Модуль 3. Практика: Развертывание (Provisioning) и защита периметра</h2>
+
+    <div class="tldr-box">
+        <p><strong>TL;DR:</strong> Развертывание (Provisioning) БД в облаке — это процесс выделения ресурсов. В Azure он состоит из 3 шагов: создание <strong>Логического сервера</strong> (управляет логинами и сетью), создание <strong>Самой базы</strong> (хранит таблицы) и настройка <strong>Сетевого экрана / Firewall</strong> (решает, кто может подключиться).</p>
+    </div>
+
+    <div class="deep-dive">
+        <h3>Под капотом (Deep Dive): Механика развертывания шаг за шагом</h3>
+        <p>Когда вы нажимаете "Create" в Azure Portal, выстраивается следующая иерархия:</p>
+        <ol>
+            <li><strong>Resource Group (Группа ресурсов):</strong> Это папка (логический контейнер). В неё складывается сервер, база, бэкапы. <em>Главное правило:</em> удаление Resource Group мгновенно удаляет все внутри и гарантированно останавливает списание денег (важно для тренировок и лаб).</li>
+            <li><strong>Logical Server (Логический сервер SQL):</strong> В отличие от локального сервера, это не виртуальная машина, на которую можно зайти по RDP. Это просто URL-адрес (например, <code>myserver.database.windows.net</code>) и контроллер политик безопасности (кто имеет права админа).</li>
+            <li><strong>Authentication (Аутентификация):</strong> Как мы будем подключаться?
+                <ul>
+                    <li><em>SQL Auth:</em> Старые добрые логин и пароль. (Быстро, но менее безопасно).</li>
+                    <li><em>Microsoft Entra ID (ранее Azure AD):</em> Вход по корпоративной учетной записи. Это более безопасно (Best Practice), так как поддерживает многофакторную аутентификацию (MFA).</li>
+                </ul>
+            </li>
+        </ol>
+    </div>
+
+    <div class="best-practice">
+        <strong>Best Practices vs. Anti-patterns (Настройка Сети):</strong><br>
+        <p style="margin-top: 5px; margin-bottom: 10px;">База в облаке по умолчанию заблокирована для всего интернета. Как к ней подключиться?</p>
+        <span style="color: #27AE60; font-weight: bold;">✔ Правильно (Best Practice):</span> Использовать <strong>Private Endpoints</strong> (Закрытые конечные точки). База получает внутренний IP-адрес вашей корпоративной сети. Хакеры из интернета физически не видят вашу базу.<br>
+        <em>Архитектурный лимит: логический сервер SQL поддерживает максимум 250 частных конечных точек (Private Endpoints).</em><br><br>
+        <span style="color: #F39C12; font-weight: bold;">⚠ Допустимо (Для разработки):</span> Открыть Firewall строго для вашего текущего IP-адреса (настройка <i>Add current client IP</i>).<br><br>
+        <span style="color: #C0392B; font-weight: bold;">✖ Неправильно (Anti-pattern):</span> Включать опцию <code>Allow Azure services and resources to access this server</code> в продакшене. Эта настройка разрешает доступ к вашей базе с <em>ЛЮБОГО</em> ресурса Azure (включая чужие виртуалки, купленные злоумышленниками в их собственных аккаунтах Azure).
+    </div>
+
+    <h3>Пример: Создание реляционной связи (DDL)</h3>
+    <p>Создание двух таблиц с жесткой ссылочной целостностью:</p>
+    <code>
+<pre>
+CREATE TABLE Manufacturer (
+    ManufacturerID INT PRIMARY KEY,
+    ManufacturerName NVARCHAR(50) NOT NULL
+);
+
+CREATE TABLE Vehicle (
+    VehicleID INT PRIMARY KEY,
+    ManufacturerID INT NOT NULL,
+    ListPrice DECIMAL(10, 2),
+    FOREIGN KEY (ManufacturerID) REFERENCES Manufacturer(ManufacturerID)
+);
+</pre>
+    </code>
+    <p><em>Объяснение:</em> СУБД физически запретит добавить автомобиль (Vehicle), если его <code>ManufacturerID</code> не существует в таблице <code>Manufacturer</code>.</p>
+
+
+    <!-- БЛОК 4: ОЦЕНКА ЗНАНИЙ (QUIZ) -->
+    <h2>Модуль 4. Оценка модуля (Проверка знаний)</h2>
+
+    <div class="tldr-box" style="background-color: #FDFEFE; border-color: #D5DBDB;">
+        <h3 style="color: #2C3E50; margin-top: 0;">Архитектурный разбор тестовых заданий</h3>
+        <p>Ниже представлены правильные ответы на вопросы оценки с техническим обоснованием каждого выбора.</p>
+        
+        <ol style="margin-bottom: 0; padding-left: 20px;">
+            <li style="margin-bottom: 15px;">
+                <strong>Какой сервис Azure SQL вы бы использовали для среды разработки, где требуется быстрое создание и удаление экземпляров?</strong><br>
+                <span style="color: #27AE60; font-weight: bold;">✔ База данных SQL Azure</span><br>
+                <em style="color: #7F8C8D; font-size: 13px;">Обоснование: Это чистый PaaS. Развертывание и удаление занимает считанные минуты, что идеально подходит для временных Dev/Test сред.</em>
+            </li>
+
+            <li style="margin-bottom: 15px;">
+                <strong>Какая служба SQL Azure лучше всего подходит для сценария, в котором необходимо легко управлять эластичностью базы данных и выделением ресурсов в нескольких базах данных?</strong><br>
+                <span style="color: #27AE60; font-weight: bold;">✔ База данных SQL Azure с эластичным пулом (Elastic Pool)</span><br>
+                <em style="color: #7F8C8D; font-size: 13px;">Обоснование: Эластичные пулы позволяют множеству баз данных делить между собой общий пул вычислительных ресурсов (vCore/DTU), что сильно экономит бюджет при неравномерных нагрузках (SaaS-приложения).</em>
+            </li>
+
+            <li style="margin-bottom: 15px;">
+                <strong>Компания планирует перенести свою базу данных MySQL в Azure для повышения масштабируемости и автоматического резервного копирования. Какую службу Azure следует выбрать?</strong><br>
+                <span style="color: #27AE60; font-weight: bold;">✔ База данных Azure для MySQL</span><br>
+                <em style="color: #7F8C8D; font-size: 13px;">Обоснование: Прямой переход на нативный PaaS-сервис от Azure для MySQL обеспечит и масштабируемость, и встроенные бэкапы без изменения кода приложения.</em>
+            </li>
+
+            <li style="margin-bottom: 15px;">
+                <strong>Для организации требуется решение базы данных, поддерживающее модель гибридного развертывания, что позволяет легко интегрироваться с локальными системами. Какую службу SQL Azure следует выбрать?</strong><br>
+                <span style="color: #27AE60; font-weight: bold;">✔ SQL Server на Виртуальных машинах Microsoft Azure</span><br>
+                <em style="color: #7F8C8D; font-size: 13px;">Обоснование: IaaS-модель (виртуальные машины) обеспечивает 100% сетевую и инфраструктурную совместимость для интеграции с локальными (on-premises) доменами Active Directory и построения гибридных кластеров AlwaysOn.</em>
+            </li>
+
+            <li style="margin-bottom: 15px;">
+                <strong>Компания должна перенести базу данных в облако с минимальными изменениями в существующих приложениях и требует таких функций, как связанные серверы (Linked Servers) и Service Broker. Какую службу следует выбрать?</strong><br>
+                <span style="color: #27AE60; font-weight: bold;">✔ Управляемый экземпляр SQL Azure (Managed Instance)</span><br>
+                <em style="color: #7F8C8D; font-size: 13px;">Обоснование: Managed Instance создан специально для бесшовной миграции "Lift-and-Shift". Он поддерживает старые фичи уровня инстанса (Linked Servers, SQL Agent, Service Broker), которых нет в обычной "Базе данных SQL Azure".</em>
+            </li>
+
+            <li style="margin-bottom: 15px;">
+                <strong>Ваша организация хочет перенести локальную базу данных SQL Server в Azure. База данных имеет сложные запросы и требует полных прав администратора по СУБД и операционной системе. Какая служба SQL Azure лучше всего соответствует этим требованиям?</strong><br>
+                <span style="color: #27AE60; font-weight: bold;">✔ SQL Server на Виртуальных машинах Microsoft Azure</span><br>
+                <em style="color: #7F8C8D; font-size: 13px;">Обоснование: Ключевая фраза — "требует полных прав на операционную систему". Только IaaS дает доступ по RDP к самой Windows/Linux.</em>
+            </li>
+
+            <li style="margin-bottom: 15px;">
+                <strong>Компания обеспокоена административными расходами на управление обновлениями и резервными копиями базы данных. Они рассматривают миграцию рабочих нагрузок SQL Server в Azure. Какая служба Azure SQL поможет свести к минимуму их административные задачи?</strong><br>
+                <span style="color: #27AE60; font-weight: bold;">✔ Управляемый экземпляр SQL Azure (Managed Instance)</span><br>
+                <em style="color: #7F8C8D; font-size: 13px;">Обоснование: Если мигрируются "существующие рабочие нагрузки SQL Server" с целью превратить их в PaaS (убрать рутину управления бэкапами и патчами), Managed Instance — лучший выбор, так как не требует переписывания кода, в отличие от Azure SQL Database.</em>
+            </li>
+
+            <li style="margin-bottom: 15px;">
+                <strong>Ваша компания должна обеспечить высокий уровень доступности и автоматические обновления для решения облачной базы данных. Какая служба Azure SQL предлагает доступность 99.995% и автоматическое управление?</strong><br>
+                <span style="color: #27AE60; font-weight: bold;">✔ База данных SQL Azure</span><br>
+                <em style="color: #7F8C8D; font-size: 13px;">Обоснование: База данных SQL Azure на уровне Business Critical / Premium (с резервированием зон) гарантирует самый высокий на рынке SLA (99.995%) и является полностью управляемым PaaS-решением.</em>
+            </li>
+
+            <li style="margin-bottom: 15px;">
+                <strong>Технологическая компания нуждается в масштабируемом решении базы данных для своего нового облачного приложения, которое сводит к минимуму затраты и административные усилия. Они ожидают нагрузки переменных и требуют быстрого масштабирования. Какая служба SQL Azure наиболее подходит?</strong><br>
+                <span style="color: #27AE60; font-weight: bold;">✔ База данных SQL Azure с бессерверной конфигурацией (Serverless)</span><br>
+                <em style="color: #7F8C8D; font-size: 13px;">Обоснование: Ключевые слова "новое облачное приложение", "переменные нагрузки" и "минимизация затрат". Бессерверная конфигурация (Serverless) автоматически масштабирует вычислительную мощность посекундно и может ставить базу "на паузу" при отсутствии активности, экономя деньги.</em>
+            </li>
+        </ol>
+    </div>
+
+    <!-- ИТОГИ -->
+    <div class="summary-box">
+        <h2 style="border: none; background: none; color: #2C3E50; margin: 0; padding: 0;">Сводка и Итоги</h2>
+        <div class="xp-badge">Завершено | Получено XP: 100</div>
+        
+        <div style="text-align: left; background: #FFFFFF; padding: 25px; border-radius: 8px; margin-top: 20px;">
+            <p><strong>Azure берет на себя рутину обслуживания инфраструктуры, позволяя разработчикам фокусироваться на данных.</strong></p>
+            <p>В этом модуле мы успешно изучили:</p>
+            <ul style="color: #333; line-height: 1.8;">
+                <li><strong>Управляемые БД (PaaS):</strong> Возможности Azure Database для MySQL и PostgreSQL (авто-бэкапы, HA, гибкий сервер).</li>
+                <li><strong>Отличия СУБД:</strong> MySQL как лидер для простых веб-стеков (LAMP), и PostgreSQL как мощный инструмент для сложной логики.</li>
+                <li><strong>Практику Provisioning:</strong> Как безопасно развернуть Azure SQL, настроить Firewall (понимая риски) и выполнить базовые DDL/DML/DQL скрипты.</li>
+            </ul>
+
+            <h3 style="color: #E74C3C; font-size: 18px; margin-top: 25px;">Дальнейшие шаги (Next Steps)</h3>
+            <p style="color: #555;">Вы завершили огромный блок по реляционным базам данных. Следующий логичный шаг в вашей карьере — это подтверждение знаний.</p>
+            
+            <div style="background: #F9EBEA; border-left: 4px solid #E74C3C; padding: 15px; margin-top: 20px;">
+                <strong>Сертификация Azure Data Fundamentals:</strong><br>
+                Используйте полученные знания для сдачи экзамена DP-900. Создайте бесплатную учетную запись Azure (30 дней), разверните Гибкий сервер PostgreSQL или базу Azure SQL, создайте таблицы и <em>обязательно</em> не забудьте удалить Resource Group после тестов, чтобы избежать списаний (Cost Optimization).
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>
