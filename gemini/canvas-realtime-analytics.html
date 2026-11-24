@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Архитектурный конспект: Основы аналитики в реальном времени</title>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+    <script>mermaid.initialize({startOnLoad:true, theme: 'default'});</script>
+    <style>
+        /* Базовые стили: Светлая тема, черный текст, Times New Roman 14px */
+        body {
+            font-family: 'Times New Roman', Times, serif;
+            font-size: 14px;
+            color: #000000;
+            background-color: #FAFAFA;
+            line-height: 1.6;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        /* Заголовки */
+        h1, h2, h3, h4 {
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            color: #2C3E50;
+            margin-top: 1.5em;
+            margin-bottom: 0.5em;
+        }
+        h1 { 
+            font-size: 30px; 
+            text-transform: uppercase; 
+            border-bottom: 3px solid #E67E22; 
+            padding-bottom: 12px; 
+            color: #D35400; 
+            text-align: center;
+        }
+        h2 { 
+            font-size: 24px; 
+            color: #2980B9; 
+            border-left: 5px solid #3498DB; 
+            padding-left: 15px; 
+            background-color: #EBF5FB;
+            padding: 10px 15px;
+            margin-top: 50px;
+        }
+        h3 { 
+            font-size: 18px; 
+            color: #8E44AD; 
+            font-style: italic; 
+            font-weight: bold;
+        }
+
+        /* Выделение кода */
+        code { 
+            font-family: 'Courier New', Courier, monospace; 
+            background-color: #EAECEE; 
+            padding: 3px 6px; 
+            border-radius: 4px; 
+            color: #C0392B; 
+            font-weight: bold; 
+            font-size: 13px;
+        }
+        pre code {
+            display: block;
+            padding: 15px;
+            white-space: pre-wrap;
+            background-color: #F4F6F7;
+            border-left: 4px solid #BDC3C7;
+        }
+
+        /* Блоки контента */
+        .tldr-box { 
+            background-color: #FDEDEC; 
+            border: 1px solid #F5B7B1; 
+            padding: 20px; 
+            border-radius: 8px; 
+            margin-bottom: 25px; 
+            font-size: 15px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+        .analogy-box { 
+            background-color: #FEF9E7; 
+            border-left: 5px solid #F1C40F; 
+            padding: 20px; 
+            margin-bottom: 25px; 
+            border-radius: 0 8px 8px 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        .deep-dive { 
+            background-color: #F8F9F9; 
+            border: 1px solid #D5DBDB; 
+            padding: 20px; 
+            border-radius: 8px; 
+            margin: 25px 0; 
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+        .best-practice { 
+            background-color: #E8F8F5; 
+            border-left: 5px solid #1ABC9C; 
+            padding: 20px; 
+            margin: 20px 0; 
+            border-radius: 0 8px 8px 0;
+        }
+
+        /* Таблицы */
+        table { 
+            width: 100%; 
+            border-collapse: collapse; 
+            margin: 25px 0; 
+            font-family: 'Segoe UI', sans-serif; 
+            font-size: 14px; 
+            background-color: #FFFFFF;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        th, td { 
+            border: 1px solid #BDC3C7; 
+            padding: 15px; 
+            text-align: left; 
+        }
+        th { 
+            background-color: #34495E; 
+            color: #FFFFFF; 
+            font-weight: 600;
+        }
+        tr:nth-child(even) { background-color: #F8F9F9; }
+        tr:hover { background-color: #EBF5FB; }
+
+        /* Контейнеры для графики */
+        .visual-container { 
+            text-align: center; 
+            background: #FFFFFF; 
+            padding: 25px; 
+            border: 1px solid #EAEDED; 
+            border-radius: 12px; 
+            margin: 30px 0; 
+            box-shadow: 0 6px 12px rgba(0,0,0,0.08); 
+        }
+        .visual-container img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+        }
+        .caption {
+            font-family: 'Arial', sans-serif;
+            font-size: 13px;
+            color: #7F8C8D;
+            margin-top: 15px;
+            font-style: italic;
+        }
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Архитектурный конспект: Основы аналитики в реальном времени</h1>
+
+    <div class="tldr-box">
+        <p><strong>TL;DR:</strong> Не все данные могут ждать ночной загрузки. <strong>Аналитика в реальном времени (Streaming)</strong> позволяет мгновенно реагировать на события (транзакции, датчики IoT). Современная архитектура объединяет надежность пакетной обработки исторических данных со скоростью потоковой передачи для оперативных решений.</p>
+    </div>
+
+    <!-- БЛОК 1: BATCH VS STREAM -->
+    <h2>Модуль 1. Пакетная (Batch) против Потоковой (Stream) обработки</h2>
+
+    <div class="analogy-box">
+        <strong>Аналогия из жизни (Подсчет автомобилей):</strong><br>
+        <ul>
+            <li><strong>Пакетная обработка (Batch):</strong> Вы собираете все проезжающие автомобили на огромной парковке. В конце дня вы закрываете парковку и считаете все машины разом. <em>Плюс:</em> Можно точно пересчитать огромные объемы. <em>Минус:</em> Вы узнаете результат только завтра.</li>
+            <li><strong>Потоковая обработка (Stream):</strong> Вы ставите лазерный датчик над дорогой. Он считает каждую машину в ту же миллисекунду, как она проехала, и рисует график за последние 60 секунд. Вы не ждете, вы видите тренд прямо сейчас!</li>
+        </ul>
+    </div>
+
+    <div class="grid-2">
+        <div class="visual-container" style="margin-top: 0;">
+            <img src="image_b36de2.jpg" alt="Пакетная обработка (Batch)">
+            <div class="caption">Рис 1. Пакетная обработка: Сбор данных -> Хранение (Ожидание) -> Обработка всего пула.</div>
+        </div>
+        <div class="visual-container" style="margin-top: 0;">
+            <img src="image_b36da8.png" alt="Потоковая обработка (Stream)">
+            <div class="caption">Рис 2. Потоковая обработка: Данные обрабатываются мгновенно, группируясь по временным окнам (Time Windows).</div>
+        </div>
+    </div>
+
+
+    <!-- БЛОК 2: АРХИТЕКТУРНЫЕ ШАБЛОНЫ -->
+    <h2>Модуль 2. Архитектура Lambda (Объединение двух миров)</h2>
+
+    <div class="deep-dive">
+        <h3>Под капотом (Deep Dive): Лямбда-архитектура</h3>
+        <p>Крупным корпорациям нужны как точные исторические отчеты, так и оперативные метрики. <strong>Лямбда-архитектура</strong> решает это, разветвляя входящий поток данных на два пути:</p>
+        <ol>
+            <li><strong>Холодный путь (Batch Layer):</strong> Данные сбрасываются в Data Lake и обрабатываются раз в сутки.</li>
+            <li><strong>Горячий путь (Speed Layer):</strong> Данные летят в потоковый процессор для мгновенного отображения.</li>
+            <li><strong>Уровень обслуживания (Serving Layer):</strong> Объединяет результаты обоих путей для конечного пользователя.</li>
+        </ol>
+    </div>
+
+    <div class="visual-container">
+        <img src="image_b36d9f.png" alt="Лямбда-архитектура">
+        <div class="caption">Рис 3. Шаблон Лямбда-архитектуры. Данные (1) разветвляются на пакетное хранилище (2,3,5) и на потоковую обработку в реальном времени (4,6) для визуализации (7).</div>
+    </div>
+
+
+    <!-- БЛОК 3: ПОТОКОВЫЕ ЭЛЕМЕНТЫ -->
+    <h2>Модуль 3. Элементы потоковой архитектуры (Sources & Sinks)</h2>
+
+    <div class="visual-container">
+        <img src="image_b36abc.png" alt="Общая архитектура потоковой обработки">
+        <div class="caption">Рис 4. Конвейер потока: Источник (События) -> Очередь (Queue) -> Непрерывный запрос (Perpetual Query) -> Приемник (Sink).</div>
+    </div>
+
+    <p>Любой потоковый конвейер состоит из трех фундаментальных слоев:</p>
+    <table>
+        <thead>
+            <tr>
+                <th>Слой</th>
+                <th>Роль</th>
+                <th>Службы Azure</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><strong>1. Источник (Source/Queue)</strong></td>
+                <td>Буферизирует миллионы событий в секунду и гарантирует доставку.<br><em>Лимиты Event Hubs:</em> Размер сообщения до 1 МБ (Standard) или до 20 МБ (Dedicated), до 32 разделов (в базовых уровнях), срок хранения данных — до 90 дней (в Premium).</td>
+                <td>Azure Event Hubs, Azure IoT Hub, Apache Kafka.</td>
+            </tr>
+            <tr>
+                <td><strong>2. Потоковый процессор</strong></td>
+                <td>Агрегирует данные по времени и фильтрует события "на лету".<br><em>Лимиты Stream Analytics:</em> Жесткое ограничение в 60 входов, 60 выходов и 60 функций на 1 задание (Job). Максимум 66 потоковых единиц (SU) на задание.</td>
+                <td>Azure Stream Analytics, Spark Structured Streaming, Fabric Eventstream.</td>
+            </tr>
+            <tr>
+                <td><strong>3. Приемник (Sink)</strong></td>
+                <td>Куда сбрасывается результат обработки.</td>
+                <td>Power BI, Data Lake, Cosmos DB, Eventhouse (KQL).</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <!-- БЛОК 4: MICROSOFT FABRIC REAL-TIME -->
+    <h2>Модуль 4. Продвинутая архитектура: Fabric Real-Time Intelligence</h2>
+
+    <div class="tldr-box" style="background-color: #F4F6F6; border-color: #BDC3C7;">
+        <p><strong>Microsoft Fabric Real-Time Intelligence</strong> — это SaaS-подсистема для работы с телеметрией "под ключ". Она включает маршрутизацию, СУБД для временных рядов (Eventhouse) и автоматизированные реакции (Активатор).</p>
+    </div>
+
+    <div class="visual-container">
+        <img src="image_b36a7c.png" alt="Архитектура Fabric Real-Time Intelligence">
+        <div class="caption">Рис 5. Экосистема Real-Time Intelligence в Fabric. Включает Eventstream (Прием), Eventhouse (Хранение), Reflex (Триггеры) и Real-Time Hub.</div>
+    </div>
+
+    <h3>Инновационные возможности (Deep Dive)</h3>
+    <ul>
+        <li><strong>Eventhouse и KQL:</strong> Специализированная колоночная база данных для временных рядов. <code>Kusto Query Language (KQL)</code> оптимизирован для полнотекстового поиска и агрегаций миллиардов строк телеметрии за миллисекунды.</li>
+        <li><strong>Data Activator (Reflex):</strong> Система автоматического реагирования без кода. Позволяет настраивать триггеры на потоки или визуализации Power BI.</li>
+        <li><strong>AI Copilot и MCP Агенты (Preview):</strong> Интеграция Copilot позволяет писать KQL-запросы на естественном языке ("Покажи среднюю температуру датчика X за 5 минут"). Более того, внедрена поддержка серверов <strong>Model Context Protocol (MCP)</strong>, что позволяет внешним ИИ-агентам безопасно взаимодействовать с Eventhouse и Активатором.</li>
+        <li><strong>Цифровые двойники (Digital Twins - Preview):</strong> Позволяет создавать виртуальные копии физических объектов (например, завода) и привязывать к ним живые потоки данных телеметрии для мониторинга в реальном времени.</li>
+    </ul>
+
+
+    <!-- БЛОК 5: SPARK STRUCTURED STREAMING -->
+    <h2>Модуль 5. Apache Spark Structured Streaming (Под капотом)</h2>
+
+    <div class="deep-dive">
+        <h3>Принцип бесконечной таблицы</h3>
+        <p>Для хардкорной инженерии в Azure Databricks и Fabric Spark используется <strong>Spark Structured Streaming</strong>. Его фундаментальная идея: вы работаете с потоком так, будто это обычная статичная таблица (DataFrame), к которой снизу постоянно приписываются новые строки.</p>
+    </div>
+
+    <div class="visual-container">
+        <img src="image_b36a24.png" alt="Spark Structured Streaming">
+        <div class="caption">Рис 6. Spark Structured Streaming. Поток превращается в бесконечно растущий Dataframe. Запрос применяется инкрементально.</div>
+    </div>
+
+    <h3>Архитектурные компромиссы обработки (Modes)</h3>
+    <p>Под капотом Spark позволяет выбрать один из двух режимов работы движка в зависимости от жесткости ваших SLA:</p>
+    <table>
+        <thead>
+            <tr>
+                <th>Режим (Processing Mode)</th>
+                <th>Механика работы</th>
+                <th>Задержка (Latency)</th>
+                <th>Отказоустойчивость</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><strong>Micro-batch (По умолчанию)</strong></td>
+                <td>Движок накапливает данные за долю секунды и запускает мини-пакетную задачу.</td>
+                <td>~ 100 миллисекунд</td>
+                <td><strong>Exactly-once</strong> (Строго один раз). Достигается за счет механизмов <em>Checkpointing</em> и <em>Write-Ahead Logs (WAL)</em>.</td>
+            </tr>
+            <tr>
+                <td><strong>Continuous Processing (С версии Spark 2.3)</strong></td>
+                <td>Непрерывная конвейерная обработка каждого события (как в Apache Flink).</td>
+                <td><strong>~ 1 миллисекунда</strong></td>
+                <td><strong>At-least-once</strong> (Хотя бы один раз). Подходит для сценариев, где микросекунды критичнее случайного дубля данных.</td>
+            </tr>
+        </tbody>
+    </table>
+
+
+    <!-- БЛОК 6: ПРАКТИКА -->
+    <h2>Модуль 6. Практическая лаборатория (Microsoft Fabric Real-Time)</h2>
+
+    <div class="tldr-box">
+        <p><strong>Цель:</strong> Захватить живой поток данных о поездках нью-йоркских такси, сохранить его в колоночную БД (Eventhouse) и выполнить KQL-запрос в реальном времени с визуализацией.</p>
+    </div>
+
+    <h3>Шаг 1. Подготовка инфраструктуры (Workspace)</h3>
+    <div class="grid-2">
+        <div class="visual-container" style="margin: 10px 0; padding: 10px;">
+            <img src="image_b366c0.png" alt="Выбор среды Fabric">
+            <div class="caption">1. Выбор среды Fabric для доступа к Real-Time Intelligence.</div>
+        </div>
+        <div class="visual-container" style="margin: 10px 0; padding: 10px;">
+            <img src="image_b36682.png" alt="Пустая рабочая область">
+            <div class="caption">2. Чистая рабочая область с Premium Capacity готова к приему потока.</div>
+        </div>
+    </div>
+
+    <h3>Шаг 2. Маршрутизация потока (Real-Time Hub & Eventstream)</h3>
+    <div class="grid-2">
+        <div class="visual-container" style="margin: 10px 0; padding: 10px;">
+            <img src="image_b3665d.jpg" alt="Real-Time Hub">
+            <div class="caption">1. Переход в раздел Real-Time Hub и выбор источника.</div>
+        </div>
+        <div class="visual-container" style="margin: 10px 0; padding: 10px;">
+            <img src="image_b36640.jpg" alt="Yellow Taxi">
+            <div class="caption">2. Выбор публичного тестового потока (Yellow taxi sample).</div>
+        </div>
+        <div class="visual-container" style="margin: 10px 0; padding: 10px;">
+            <img src="image_b36375.jpg" alt="Открытие Eventstream">
+            <div class="caption">3. Успешное развертывание и открытие Eventstream на холсте.</div>
+        </div>
+    </div>
+
+    <h3>Шаг 3. Настройка хранилища (Eventhouse) и Публикация</h3>
+    <div class="grid-2">
+        <div class="visual-container" style="margin: 10px 0; padding: 10px;">
+            <img src="image_b3635c.jpg" alt="Добавление Eventhouse">
+            <div class="caption">1. На холсте нажимаем Add destination -> Eventhouse.</div>
+        </div>
+        <div class="visual-container" style="margin: 10px 0; padding: 10px;">
+            <img src="image_b3631c.jpg" alt="Создание таблицы">
+            <div class="caption">2. Создание таблицы KQL (yellow-taxi).</div>
+        </div>
+        <div class="visual-container" style="margin: 10px 0; padding: 10px; grid-column: span 2;">
+            <img src="image_b3625e.jpg" alt="Предварительный просмотр данных">
+            <div class="caption">3. Вкладка Data preview: успешное поступление потоковых событий в реальном времени.</div>
+        </div>
+    </div>
+    
+    <h3>Шаг 4. Выполнение KQL-запросов и Визуализация</h3>
+    <div class="grid-2">
+        <div class="visual-container" style="margin: 10px 0; padding: 10px;">
+            <img src="image_b35f95.jpg" alt="Открытие Queryset">
+            <div class="caption">1. Открытие taxi-eventhouse_queryset для написания кода.</div>
+        </div>
+        <div class="visual-container" style="margin: 10px 0; padding: 10px;">
+            <img src="image_b35f58.jpg" alt="Визуализация">
+            <div class="caption">2. Агрегация по 1-часовым окнам (bin) и построение графиков (Column chart) прямо в интерфейсе.</div>
+        </div>
+    </div>
+
+    <code>
+<pre>
+['yellow-taxi']
+| summarize PickupCount = count() by bin(todatetime(tpep_pickup_datetime), 1h)
+</pre>
+    </code>
+
+    <!-- БЛОК 7: DELTA LAKE DEEP DIVE -->
+    <h2>Модуль 7. Глубокое погружение: Lakehouse и Delta Tables в Fabric</h2>
+
+    <div class="tldr-box">
+        <p><strong>TL;DR:</strong> <strong>Delta Lake</strong> — это открытый формат хранения по умолчанию для всех таблиц Lakehouse в Fabric. Он объединяет скорость аналитики Parquet-файлов с транзакционной надежностью базы данных (ACID). Fabric обрабатывает дельта-форматирование и автоматическую оптимизацию (V-Order) в фоновом режиме.</p>
+    </div>
+
+    <div class="deep-dive">
+        <h3>Под капотом: Настройки Spark (Fabric vs Synapse)</h3>
+        <p>Fabric использует среду выполнения Apache Spark, но с агрессивными оптимизациями "из коробки", которые отличают её от классического Azure Synapse Analytics.</p>
+        
+        <table style="margin-top: 15px;">
+            <thead>
+                <tr>
+                    <th>Конфигурация Spark</th>
+                    <th>Fabric (по умолчанию)</th>
+                    <th>Synapse Analytics</th>
+                    <th>Бизнес-значение</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><code>spark.sql.sources.default</code></td>
+                    <td><strong>delta</strong></td>
+                    <td>parquet</td>
+                    <td>Любой сохраненный DataFrame автоматически становится транзакционной Delta-таблицей, без ручного указания формата.</td>
+                </tr>
+                <tr>
+                    <td><code>spark.sql.parquet.vorder.default</code></td>
+                    <td><strong>true</strong> (в средах до 1.3)</td>
+                    <td>N/A</td>
+                    <td>Проприетарная сортировка данных Microsoft (V-Order), которая кардинально ускоряет чтение файлов Parquet движком Power BI (Direct Lake).</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="best-practice">
+        <strong>Автоматическое обнаружение и Ярлыки (Shortcuts):</strong><br>
+        <p style="margin-top: 5px;">Fabric Lakehouse автоматически сканирует OneLake и отображает найденные таблицы в разделе <code>Tables</code>. Но что если данные лежат во внешней системе?</p>
+        <ul>
+            <li><strong>Внешняя Delta-таблица (ADLS/S3):</strong> Создавайте ярлык в раздел <code>Tables</code>. Fabric сразу распознает её как готовую SQL-таблицу.</li>
+            <li><strong>Сырые CSV/JSON файлы или папки:</strong> Создавайте ярлык строго в раздел <code>Files</code>. Затем используйте Spark для чтения этих файлов (схема при чтении) и трансформации их в Delta-таблицу внутри Lakehouse.</li>
+            <li><strong>Устаревшие таблицы Apache Hive:</strong> Создавайте ярлык в <code>Files</code> и используйте <code>CREATE EXTERNAL TABLE</code> в Spark.</li>
+        </ul>
+    </div>
+
+
+    <!-- ИТОГИ -->
+    <div style="background: linear-gradient(135deg, #F0F3F4 0%, #E5E8E8 100%); border: 1px solid #CCD1D1; padding: 30px; border-radius: 12px; text-align: center; margin-top: 50px; box-shadow: 0 10px 20px rgba(0,0,0,0.05);">
+        <h2 style="border: none; background: none; color: #2C3E50; margin: 0; padding: 0;">Сводка</h2>
+        <div style="display: inline-block; background-color: #D35400; color: #FFFFFF; font-weight: bold; font-family: 'Segoe UI', sans-serif; padding: 8px 16px; border-radius: 20px; font-size: 16px; margin: 15px 0; box-shadow: 0 2px 5px rgba(211, 84, 0, 0.4);">Завершено | XP: 100</div>
+        
+        <div style="text-align: left; background: #FFFFFF; padding: 25px; border-radius: 8px; margin-top: 20px;">
+            <p><strong>Обработка в реальном времени является фундаментальным элементом современных корпоративных решений.</strong> Microsoft Azure предоставляет экосистему служб, объединяющую пакетную (Lakehouse) и потоковую обработку в единый конвейер.</p>
+            
+            <p>Из этого модуля вы узнали, как выполнять следующие задачи:</p>
+            <ul style="color: #333; line-height: 1.8;">
+                <li>Сравнение пакетной (Lakehouse/Delta) и потоковой обработки, а также паттерны Lambda-архитектуры.</li>
+                <li>Глубокое понимание <strong>Spark Structured Streaming</strong> (Micro-batch vs Continuous Processing, WAL).</li>
+                <li>Использование инноваций <strong>Microsoft Fabric Real-Time Intelligence</strong> (KQL, Активатор, MCP Агенты и Цифровые двойники).</li>
+                <li>Архитектурное управление <strong>Delta Lake</strong> в Fabric (V-Order оптимизация, настройка Shortcuts для Zero-Copy интеграций).</li>
+                <li>Практическая реализация потока: захват данных через Eventstream и визуализация "на лету" с помощью KQL.</li>
+            </ul>
+
+            <h3 style="color: #E67E22; font-size: 18px; margin-top: 25px;">Следующие шаги</h3>
+            <p style="color: #555;">Теперь, когда вы объединили теорию потоковой обработки и архитектуры хранилищ, идеальным следующим шагом будет прохождение сертификационного курса Майкрософт по основным принципам работы с данными в Azure (DP-900).</p>
+            
+            <div style="background: #FEF9E7; border-left: 4px solid #F39C12; padding: 15px; margin-top: 20px;">
+                <strong>Начало работы с Azure:</strong><br>
+                Выберите подходящую вам учетную запись Azure. Используйте оплату по мере использования или попробуйте Azure бесплатно в течение 30 дней.
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>

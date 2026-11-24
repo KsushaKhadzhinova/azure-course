@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Архитектурный конспект: Azure Data Factory (ADF)</title>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+    <script>mermaid.initialize({startOnLoad:true, theme: 'default'});</script>
+    <style>
+        /* Базовые стили: Светлая тема, черный текст, Times New Roman 14px */
+        body {
+            font-family: 'Times New Roman', Times, serif;
+            font-size: 14px;
+            color: #000000;
+            background-color: #FAFAFA;
+            line-height: 1.6;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        /* Заголовки */
+        h1, h2, h3, h4 {
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            color: #2C3E50;
+            margin-top: 1.5em;
+            margin-bottom: 0.5em;
+        }
+        h1 { 
+            font-size: 30px; 
+            text-transform: uppercase; 
+            border-bottom: 3px solid #2980B9; 
+            padding-bottom: 12px; 
+            color: #1A5276; 
+            text-align: center;
+        }
+        h2 { 
+            font-size: 24px; 
+            color: #16A085; 
+            border-left: 5px solid #1ABC9C; 
+            padding-left: 15px; 
+            background-color: #E8F8F5;
+            padding: 10px 15px;
+            margin-top: 50px;
+        }
+        h3 { 
+            font-size: 18px; 
+            color: #8E44AD; 
+            font-style: italic; 
+            font-weight: bold;
+        }
+        h4 {
+            font-size: 16px;
+            color: #2C3E50;
+            font-weight: bold;
+        }
+
+        /* Выделение кода */
+        code { 
+            font-family: 'Courier New', Courier, monospace; 
+            background-color: #EAECEE; 
+            padding: 3px 6px; 
+            border-radius: 4px; 
+            color: #C0392B; 
+            font-weight: bold; 
+            font-size: 13px;
+        }
+
+        /* Блоки контента */
+        .tldr-box { 
+            background-color: #EBF5FB; 
+            border: 1px solid #AED6F1; 
+            padding: 20px; 
+            border-radius: 8px; 
+            margin-bottom: 25px; 
+            font-size: 15px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+        .analogy-box { 
+            background-color: #FEF9E7; 
+            border-left: 5px solid #F1C40F; 
+            padding: 20px; 
+            margin-bottom: 25px; 
+            border-radius: 0 8px 8px 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        .deep-dive { 
+            background-color: #F8F9F9; 
+            border: 1px solid #D5DBDB; 
+            padding: 20px; 
+            border-radius: 8px; 
+            margin: 25px 0; 
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+        .best-practice { 
+            background-color: #E8F8F5; 
+            border-left: 5px solid #1ABC9C; 
+            padding: 20px; 
+            margin: 20px 0; 
+            border-radius: 0 8px 8px 0;
+        }
+        .warning-box {
+            background-color: #FDEDEC;
+            border-left: 5px solid #E74C3C;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 0 8px 8px 0;
+        }
+        .fabric-tip {
+            background-color: #F4ECF7;
+            border-left: 5px solid #8E44AD;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 0 8px 8px 0;
+        }
+
+        /* Таблицы */
+        table { 
+            width: 100%; 
+            border-collapse: collapse; 
+            margin: 25px 0; 
+            font-family: 'Segoe UI', sans-serif; 
+            font-size: 13.5px; 
+            background-color: #FFFFFF;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        th, td { 
+            border: 1px solid #BDC3C7; 
+            padding: 12px 15px; 
+            text-align: left; 
+        }
+        th { 
+            background-color: #34495E; 
+            color: #FFFFFF; 
+            font-weight: 600;
+        }
+        tr:nth-child(even) { background-color: #F8F9F9; }
+        tr:hover { background-color: #EBF5FB; }
+
+        /* Контейнеры для графики */
+        .visual-container { 
+            text-align: center; 
+            background: #FFFFFF; 
+            padding: 25px; 
+            border: 1px solid #EAEDED; 
+            border-radius: 12px; 
+            margin: 30px 0; 
+            box-shadow: 0 6px 12px rgba(0,0,0,0.08); 
+        }
+        .visual-container img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+            border: 1px solid #E2E8F0;
+        }
+        .caption {
+            font-family: 'Arial', sans-serif;
+            font-size: 13px;
+            color: #7F8C8D;
+            margin-top: 15px;
+            font-style: italic;
+        }
+
+        /* Сетка */
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin: 20px 0;
+        }
+        @media (max-width: 768px) {
+            .grid-2 { grid-template-columns: 1fr; }
+        }
+
+        /* Итоговый блок */
+        .summary-box {
+            background: linear-gradient(135deg, #F0F3F4 0%, #E5E8E8 100%);
+            border: 1px solid #CCD1D1;
+            padding: 30px;
+            border-radius: 12px;
+            text-align: center;
+            margin-top: 50px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+        }
+        .xp-badge {
+            display: inline-block;
+            background-color: #16A085;
+            color: #FFFFFF;
+            font-weight: bold;
+            font-family: 'Segoe UI', sans-serif;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 16px;
+            margin: 15px 0;
+            box-shadow: 0 2px 5px rgba(22, 160, 133, 0.4);
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Архитектурный конспект: Azure Data Factory (ADF)</h1>
+
+    <div class="tldr-box">
+        <p><strong>TL;DR:</strong> <strong>Azure Data Factory (ADF)</strong> — это управляемый облачный PaaS-сервис для оркестрации и автоматизации перемещения и преобразования данных в масштабах предприятия (гибридные проекты <strong>ETL</strong> и <strong>ELT</strong>). Он поддерживает более <strong>100 встроенных коннекторов</strong>, предлагает визуальный no-code/low-code интерфейс, запускает трансформации на управляемых кластерах Spark (Mapping Data Flows) и бесшовно интегрируется с Azure Synapse, Databricks и Power BI.</p>
+    </div>
+
+    <div class="fabric-tip">
+        <p style="margin: 0;"><strong>Эволюция платформы (Microsoft Fabric):</strong> <em>Data Factory в Microsoft Fabric</em> — это следующее поколение Azure Data Factory (SaaS) с упрощенной архитектурой, встроенным ИИ (Copilot) и единым хранилищем OneLake. Если вы начинаете проект с нуля, Microsoft рекомендует стартовать с Fabric Data Factory, однако знания и навыки ADF переносятся туда практически 1-в-1.</p>
+    </div>
+
+    <div class="analogy-box">
+        <strong>Аналогия из жизни (Автоматизированный логистический хаб):</strong><br>
+        <p>Представьте, что ваши данные разбросаны по десяткам складов (локальный SQL Server, облачные хранилища Amazon S3, REST API, файлы Excel). <strong>Azure Data Factory</strong> — это не сам склад и не магазин, а <strong>диспетчерский центр и конвейерная лента</strong>. Он сам отправляет грузовики (<em>Copy Activity</em>) по расписанию или по сигналу (<em>Trigger</em>), переупаковывает и сортирует груз на фабрике (<em>Data Flows / Spark</em>) и доставляет готовые паллеты в витрину для аналитиков (<em>Synapse / Power BI</em>).</p>
+    </div>
+
+    <!-- БЛОК 1: КАК РАБОТАЕТ ADF И БИЗНЕС-СЦЕНАРИИ -->
+    <h2>Модуль 1. Архитектура, возможности и 4 этапа работы ADF</h2>
+
+    <p>В мире больших данных сырые, неорганизованные данные сами по себе не несут бизнес-ценности. Azure Data Factory превращает их в аналитические активы через 4 взаимосвязанных этапа:</p>
+
+    <div class="visual-container">
+        <img src="image_f8273b.jpg" alt="Code-Free ETL as a Service">
+        <div class="caption">Рис 1. Пять столпов Code-Free ETL как сервиса в Azure Data Factory: Прием (Ingest), Поток управления (Control Flow), Потоки данных (Data Flow), Расписание (Schedule) и Мониторинг (Monitor).</div>
+    </div>
+
+    <ol>
+        <li><strong>Подключение и сбор (Connect &amp; Collect):</strong> Подключение к разнородным локальным, облачным и SaaS-источникам (100+ коннекторов) и перенос данных в централизованное облачное хранилище (например, ADLS Gen2) с помощью <code>Copy Activity</code>. Поддерживается <em>сжатие данных (Data Compression)</em> для экономии сетевого трафика и <em>предпросмотр/валидация (Data Preview &amp; Validation)</em>.</li>
+        <li><strong>Преобразование и обогащение (Transform &amp; Enrich):</strong> Очистка, объединение (Joins), агрегация и обогащение данных. Можно делать <strong>без кода</strong> через <em>Mapping Data Flows</em> (работают на управляемых кластерах Spark) или вызывать <strong>внешние вычисления</strong> (Azure Databricks, HDInsight Hadoop, Azure Machine Learning).</li>
+        <li><strong>CI/CD и публикация (CI/CD &amp; Publish):</strong> Полноценная интеграция с Git (Azure DevOps и GitHub) позволяет разрабатывать пайплайны в ветках, тестировать и выкатывать релизы в продакшн. Очищенные данные загружаются в Azure Synapse Analytics, Azure SQL или Cosmos DB для отчетов Power BI.</li>
+        <li><strong>Мониторинг (Monitor):</strong> Встроенное отслеживание успешности и сбоев запусков через вкладку Monitor, Azure Monitor, Log Analytics, PowerShell и настраиваемые оповещения (Alerts).</li>
+    </ol>
+
+    <div class="visual-container">
+        <img src="image_f8273f.jpg" alt="Визуальное руководство по архитектуре Azure Data Factory">
+        <div class="caption">Рис 2. Полная архитектурная карта Azure Data Factory (проект Sketch the Docs): от бизнес-сценария и 7 ключевых преимуществ до связей между компонентами.</div>
+    </div>
+
+    <div class="deep-dive">
+        <h3>Классический Enterprise-сценарий (Игровая студия)</h3>
+        <p><strong>Задача:</strong> Игровая компания собирает петабайты логов в облаке (Blob Storage), а справочники игроков, игр и маркетинговых кампаний хранятся в локальной БД (on-premises). Нужно ежедневно (и при появлении новых файлов) объединять эти данные, обрабатывать в Spark и отдавать в хранилище для BI-отчетов.</p>
+        <p><strong>Решение в ADF:</strong></p>
+        <ul>
+            <li>Через <strong>Self-Hosted Integration Runtime</strong> безопасно забираются справочники из локальной сети.</li>
+            <li>Конвейер (<strong>Pipeline</strong>) объединяет их с облачными логами и передает на кластер <strong>Spark (Databricks / HDInsight)</strong>.</li>
+            <li>Результат публикуется в <strong>Azure Synapse Analytics</strong> для дашбордов Power BI.</li>
+            <li>Автоматизация обеспечивается комбинацией триггера по расписанию и событийного триггера (Blob Arrival).</li>
+        </ul>
+    </div>
+
+    <!-- БЛОК 2: КЛЮЧЕВЫЕ КОМПОНЕНТЫ -->
+    <h2>Модуль 2. Анатомия Azure Data Factory (Ключевые компоненты)</h2>
+
+    <p>Чтобы проектировать надежные пайплайны, необходимо четко разделять 6 базовых сущностей ADF и понимать, как они взаимодействуют друг с другом.</p>
+
+    <div class="visual-container">
+        <div class="mermaid">
+            flowchart LR
+                T([Триггер\nTrigger]) -->|Запускает с\nПараметрами| P[Конвейер\nPipeline]
+                
+                subgraph Pipeline_Box [Оркестрация и Control Flow]
+                    P --> A1[Активность: Copy Data\nData Movement]
+                    A1 --> A2[Активность: Data Flow\nSpark Transformation]
+                    A2 --> A3[Активность: Control\nForEach / If / Wait]
+                end
+
+                A1 -.->|Читает / Пишет| DS[(Датасеты\nDatasets)]
+                DS -->|Указывает путь/схему| LS[Связанные службы\nLinked Services]
+                
+                A2 -.->|Выполняется на| IR{{Integration Runtime\nAzure / Self-Hosted / SSIS}}
+                LS <-->|Мост и вычисления| IR
+                
+                IR <--> EXT[(Внешние хранилища\nи вычислители)]
+
+                style T fill:#FEF9E7,stroke:#F39C12,stroke-width:2px
+                style P fill:#EBF5FB,stroke:#2980B9,stroke-width:2px
+                style DS fill:#EAFAF1,stroke:#27AE60,stroke-width:2px
+                style LS fill:#F4ECF7,stroke:#8E44AD,stroke-width:2px
+                style IR fill:#FDEDEC,stroke:#E74C3C,stroke-width:2px
+        </div>
+        <div class="caption">Рис 3. Взаимосвязь компонентов ADF: Триггер запускает конвейер, активности используют датасеты и связанные службы, а Integration Runtime обеспечивает вычислительную среду.</div>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Компонент</th>
+                <th>Роль и Суть</th>
+                <th>Примеры / Особенности</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><strong>Pipeline (Конвейер)</strong></td>
+                <td>Логическая группировка активностей, выполняющая единую бизнес-задачу.</td>
+                <td>Активности могут идти последовательно (цепочкой) или параллельно. Управляется как единое целое.</td>
+            </tr>
+            <tr>
+                <td><strong>Activity (Активность)</strong></td>
+                <td>Конкретный шаг обработки внутри конвейера.</td>
+                <td>Делятся на 3 типа: <strong>Data Movement</strong> (Copy), <strong>Data Transformation</strong> (Data Flow, Databricks Notebook, Hive, Stored Proc) и <strong>Control Flow</strong> (ForEach, If Condition, Switch, Wait).</td>
+            </tr>
+            <tr>
+                <td><strong>Dataset (Набор данных)</strong></td>
+                <td>Именованное представление структуры данных (указатель на конкретную таблицу или папку).</td>
+                <td>Например, CSV-файл в контейнере Blob или таблица <code>dbo.Sales</code> в Azure SQL. Определяет схему и формат (Parquet, JSON, CSV).</td>
+            </tr>
+            <tr>
+                <td><strong>Linked Service (Связанная служба)</strong></td>
+                <td>Аналог строки подключения (Connection String) к внешнему ресурсу.</td>
+                <td>Используется для 2 целей: подключение к <strong>хранилищам данных</strong> (SQL, S3, ADLS) и к <strong>вычислительным ресурсам</strong> (Databricks, HDInsight).</td>
+            </tr>
+            <tr>
+                <td><strong>Mapping Data Flows</strong></td>
+                <td>Визуальный граф трансформаций данных любого объема без написания кода.</td>
+                <td>ADF сам поднимает, масштабирует и гасит кластеры <strong>Apache Spark</strong> под капотом. Поддерживает Join, Aggregate, Derived Column, Filter, Delta Lake.</td>
+            </tr>
+            <tr>
+                <td><strong>Triggers &amp; Pipeline Runs</strong></td>
+                <td><em>Trigger</em> определяет, <strong>когда</strong> запустить конвейер. <em>Pipeline Run</em> — это конкретный экземпляр запуска.</td>
+                <td>Типы триггеров: <strong>Schedule</strong> (расписание), <strong>Tumbling Window</strong> (скользящие окна), <strong>Storage Events</strong> (появление/удаление файла), <strong>Custom Events</strong> (Event Grid).</td>
+            </tr>
+            <tr>
+                <td><strong>Parameters vs Variables</strong></td>
+                <td>Механизмы динамической настройки конвейеров.</td>
+                <td><strong>Parameters</strong> — неизменяемые (read-only) пары ключ-значение, передаваемые при запуске. <strong>Variables</strong> — изменяемые временные значения внутри работающего конвейера.</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h3>Типы сред выполнения (Integration Runtimes — IR)</h3>
+    <p><strong>Integration Runtime (IR)</strong> — это вычислительный мост между активностью и связанной службой. Выбор правильного IR критически важен для безопасности, сетевой связности и производительности:</p>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Тип IR</th>
+                <th>Где работает</th>
+                <th>Возможности и Сценарии применения</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><strong>Azure IR</strong></td>
+                <td>Полностью управляется Microsoft в облаке Azure.</td>
+                <td>Облачные копирования (Cloud-to-Cloud), выполнение Mapping Data Flows, отправка задач в облачные вычислители. Поддерживает <em>Managed Virtual Network</em> и Private Endpoints.</td>
+            </tr>
+            <tr>
+                <td><strong>Self-Hosted IR (SHIR)</strong></td>
+                <td>Устанавливается как агент на вашей Windows-машине (on-premises или в частной VNet).</td>
+                <td><strong>Гибридные сценарии:</strong> безопасное копирование данных из локального SQL Server / файловых шар за корпоративным брандмауэром в облако Azure без открытия входящих портов.</td>
+            </tr>
+            <tr>
+                <td><strong>Azure-SSIS IR</strong></td>
+                <td>Управляемый кластер виртуальных машин Azure.</td>
+                <td>Миграция «Lift-and-Shift» для запуска существующих пакетов <strong>SQL Server Integration Services (SSIS)</strong> напрямую в облаке.</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <!-- БЛОК 3: ПРАКТИЧЕСКОЕ РУКОВОДСТВО -->
+    <h2>Модуль 3. Практика: Сборка первого конвейера в ADF Studio</h2>
+
+    <p>Интерфейс <strong>Azure Data Factory Studio</strong> разделен на три ключевые рабочие области (слева в меню):</p>
+    <ul>
+        <li><strong>Author (Создание):</strong> Визуальный редактор конвейеров, датасетов и потоков данных.</li>
+        <li><strong>Monitor (Мониторинг):</strong> История запусков (Pipeline/Trigger Runs), диагностика ошибок и статус IR.</li>
+        <li><strong>Manage (Управление):</strong> Настройка Linked Services, Integration Runtimes, Git-репозиториев и триггеров.</li>
+    </ul>
+
+    <div class="visual-container">
+        <div class="mermaid">
+            flowchart LR
+                S1[Шаг 1: Manage\nСоздать Linked Services\nSource + Sink + Test] --> S2[Шаг 2: Author\nСоздать Datasets\nУказать путь и схему]
+                S2 --> S3[Шаг 3: Author\nСобрать Pipeline\nCopy Data + Mapping]
+                S3 --> S4[Шаг 4: Publish & Run\nОпубликовать и запустить\nTrigger Now / Schedule]
+
+                style S1 fill:#F4ECF7,stroke:#8E44AD
+                style S2 fill:#EAFAF1,stroke:#27AE60
+                style S3 fill:#EBF5FB,stroke:#2980B9
+                style S4 fill:#FEF9E7,stroke:#F39C12
+        </div>
+        <div class="caption">Рис 4. Базовый алгоритм разработки и публикации первого конвейера (например, копирование CSV из Blob Storage в таблицу Azure SQL).</div>
+    </div>
+
+    <div class="deep-dive">
+        <h3>Пошаговый чек-лист сборки (Blob Storage &rarr; Azure SQL)</h3>
+        <ol>
+            <li><strong>Создайте Linked Services (вкладка Manage):</strong> Добавьте подключение к источнику (Azure Blob Storage) и приемнику (Azure SQL Database). Предпочтительный метод аутентификации — <strong>Managed Identity</strong>. Обязательно нажмите <em>Test connection</em>.</li>
+            <li><strong>Создайте Datasets (вкладка Author):</strong> Создайте два набора данных (например, <code>DelimitedText</code> для CSV и <code>AzureSqlTable</code> для целевой таблицы), привязав их к соответствующим Linked Services, и импортируйте схему (Import schema).</li>
+            <li><strong>Настройте Copy Data Activity:</strong> Создайте новый Pipeline, перетащите на холст <code>Copy data</code>. На вкладке <em>Source</em> выберите исходный датасет, на <em>Sink</em> — целевой, а на вкладке <em>Mapping</em> проверьте соответствие столбцов и типов данных.</li>
+            <li><strong>Опубликуйте и запустите (Publish &amp; Trigger):</strong> Нажмите <strong>Publish all</strong> (без публикации изменения остаются черновиком и не запускаются триггерами!). Для проверки нажмите <em>Add trigger &rarr; Trigger now</em> и отследите выполнение во вкладке <strong>Monitor</strong>.</li>
+        </ol>
+    </div>
+
+    <!-- БЛОК 4: ADF VS MICROSOFT FABRIC -->
+    <h2>Модуль 4. Выбор архитектуры: Azure Data Factory vs Microsoft Fabric</h2>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Критерий</th>
+                <th>Azure Data Factory (ADF)</th>
+                <th>Microsoft Fabric Data Factory</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><strong>Модель доставки</strong></td>
+                <td>Автономный <strong>PaaS</strong>-сервис в Azure.</td>
+                <td>Единая <strong>SaaS</strong>-платформа (Data Factory + Synapse + Power BI).</td>
+            </tr>
+            <tr>
+                <td><strong>Хранилище</strong></td>
+                <td>Работает через Linked Services с любыми внешними хранилищами.</td>
+                <td>Глубокая нативная интеграция с <strong>OneLake</strong> (Zero-Copy Shortcuts, Mirroring).</td>
+            </tr>
+            <tr>
+                <td><strong>Инфраструктура и ИИ</strong></td>
+                <td>Гранулярный контроль над IR, сетями и ресурсами.</td>
+                <td>Упрощенная архитектура, встроенный <strong>Copilot (ИИ)</strong>, быстрый старт.</td>
+            </tr>
+            <tr>
+                <td><strong>Когда выбирать?</strong></td>
+                <td>Зрелые Enterprise-проекты, сложные гибридные сети с legacy on-premises системами, жесткий контроль над выделенными IR и SSIS-пакетами.</td>
+                <td>Новые современные платформы данных, где инженерия, хранилище, Real-Time аналитика и Power BI должны жить в едином рабочем пространстве.</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <!-- БЛОК 5: BEST PRACTICES & ANTI-PATTERNS -->
+    <h2>Модуль 5. Архитектурные Best Practices и Безопасность</h2>
+
+    <div class="grid-2">
+        <div class="best-practice" style="margin: 0;">
+            <strong>✔ Правильно (Best Practices):</strong>
+            <ul style="margin-top: 8px;">
+                <li><strong>Модульность и параметризация:</strong> Вместо 50 одинаковых пайплайнов для 50 таблиц создайте один параметризованный конвейер с циклом <code>ForEach</code> и таблицей метаданных (Metadata-Driven Pipeline).</li>
+                <li><strong>Сжатие данных (Compression):</strong> Включайте сжатие (например, <code>gzip</code>) в Copy Activity при переносе больших объемов данных для ускорения передачи и экономии трафика.</li>
+                <li><strong>Политики повторов (Retry Policies):</strong> Настраивайте автоматические ретраи для защиты от кратковременных сетевых сбоев (transient errors) и подключайте оповещения Azure Monitor.</li>
+                <li><strong>Безопасность (Zero Trust):</strong> Используйте <strong>Managed Identity</strong> (Entra ID) + <strong>Azure Key Vault</strong> для секретов, а также <em>Managed Virtual Network</em> с Private Endpoints против утечки данных.</li>
+                <li><strong>Инкрементальная загрузка (CDC / Watermark):</strong> Загружайте только новые или измененные строки (через Change Tracking / CDC), а не копируйте всю базу целиком каждый день.</li>
+            </ul>
+        </div>
+        <div class="warning-box" style="margin: 0;">
+            <strong>✖ Неправильно (Anti-patterns):</strong>
+            <ul style="margin-top: 8px;">
+                <li><strong>Использовать Mapping Data Flows для простого копирования:</strong> Data Flows поднимают кластер Spark (время старта + высокая цена). Если трансформация не нужна, используйте быстрый и дешевый <code>Copy Activity</code>.</li>
+                <li><strong>Хардкодить пароли и пути:</strong> Никогда не вшивайте строки подключения в JSON пайплайна и не дублируйте датасеты для каждого файла — используйте параметры и Key Vault.</li>
+                <li><strong>Разрабатывать напрямую в Live Mode:</strong> Работа без подключения Git-репозитория (Azure DevOps / GitHub) лишает команду версионирования, Code Review и возможности отката изменений.</li>
+                <li><strong>Игнорировать выбор региона IR:</strong> Размещение Azure IR далеко от источника и приемника вызывает лишнюю сетевую задержку и плату за межрегиональный трафик (Egress).</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- ИТОГИ -->
+    <div class="summary-box">
+        <h2 style="border: none; background: none; color: #2C3E50; margin: 0; padding: 0;">Сводка и Путь обучения</h2>
+        <div class="xp-badge">Завершено | Схема обучения: 6400 XP</div>
+        
+        <div style="text-align: left; background: #FFFFFF; padding: 25px; border-radius: 8px; margin-top: 20px;">
+            <p><strong>Azure Data Factory — это фундамент корпоративной интеграции данных, превращающий разрозненные сырые хранилища в единый надежный аналитический конвейер.</strong></p>
+            
+            <ul style="color: #333; line-height: 1.8;">
+                <li><strong>Оркестрация (ETL &amp; ELT):</strong> 100+ коннекторов, визуальная разработка конвейеров, событийные триггеры и полноценный CI/CD через Git.</li>
+                <li><strong>Ядро архитектуры:</strong> Четкое разделение на <em>Pipelines</em>, <em>Activities</em>, <em>Datasets</em>, <em>Linked Services</em> и 3 типа <em>Integration Runtimes</em> (Azure, Self-Hosted, SSIS).</li>
+                <li><strong>Масштабные трансформации:</strong> Code-free <em>Mapping Data Flows</em> на управляемом Spark или интеграция с Databricks, Synapse и HDInsight.</li>
+                <li><strong>Дальнейшее развитие (Microsoft Learn):</strong> Рекомендуемая схема обучения <em>«Data integration at scale with Azure Data Factory»</em> (6 модулей: Интеграция &rarr; Петабайтный прием &rarr; Code-free трансформации &rarr; Оркестрация &rarr; Выполнение SSIS &rarr; Операционализация/CI-CD).</li>
+            </ul>
+        </div>
+    </div>
+
+</body>
+</html>

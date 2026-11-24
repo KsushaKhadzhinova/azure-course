@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Архитектурный конспект: Azure Data Lake Storage Gen2</title>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+    <script>mermaid.initialize({startOnLoad:true, theme: 'default'});</script>
+    <style>
+        /* Базовые стили: Светлая тема, черный текст, Times New Roman 14px */
+        body {
+            font-family: 'Times New Roman', Times, serif;
+            font-size: 14px;
+            color: #000000;
+            background-color: #FAFAFA;
+            line-height: 1.6;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        /* Заголовки */
+        h1, h2, h3, h4 {
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            color: #2C3E50;
+            margin-top: 1.5em;
+            margin-bottom: 0.5em;
+        }
+        h1 { 
+            font-size: 30px; 
+            text-transform: uppercase; 
+            border-bottom: 3px solid #3498DB; 
+            padding-bottom: 12px; 
+            color: #2980B9; 
+            text-align: center;
+        }
+        h2 { 
+            font-size: 24px; 
+            color: #27AE60; 
+            border-left: 5px solid #2ECC71; 
+            padding-left: 15px; 
+            background-color: #EAFAF1;
+            padding: 10px 15px;
+            margin-top: 50px;
+        }
+        h3 { 
+            font-size: 18px; 
+            color: #8E44AD; 
+            font-style: italic; 
+            font-weight: bold;
+        }
+
+        /* Выделение кода */
+        code { 
+            font-family: 'Courier New', Courier, monospace; 
+            background-color: #EAECEE; 
+            padding: 3px 6px; 
+            border-radius: 4px; 
+            color: #C0392B; 
+            font-weight: bold; 
+            font-size: 13px;
+        }
+
+        /* Блоки контента */
+        .tldr-box { 
+            background-color: #EBF5FB; 
+            border: 1px solid #AED6F1; 
+            padding: 20px; 
+            border-radius: 8px; 
+            margin-bottom: 25px; 
+            font-size: 15px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+        .analogy-box { 
+            background-color: #FEF9E7; 
+            border-left: 5px solid #F1C40F; 
+            padding: 20px; 
+            margin-bottom: 25px; 
+            border-radius: 0 8px 8px 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        .deep-dive { 
+            background-color: #F8F9F9; 
+            border: 1px solid #D5DBDB; 
+            padding: 20px; 
+            border-radius: 8px; 
+            margin: 25px 0; 
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+        .best-practice { 
+            background-color: #FDEDEC; 
+            border-left: 5px solid #E74C3C; 
+            padding: 20px; 
+            margin: 20px 0; 
+            border-radius: 0 8px 8px 0;
+        }
+
+        /* Таблицы */
+        table { 
+            width: 100%; 
+            border-collapse: collapse; 
+            margin: 25px 0; 
+            font-family: 'Segoe UI', sans-serif; 
+            font-size: 14px; 
+            background-color: #FFFFFF;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        th, td { 
+            border: 1px solid #BDC3C7; 
+            padding: 15px; 
+            text-align: left; 
+        }
+        th { 
+            background-color: #34495E; 
+            color: #FFFFFF; 
+            font-weight: 600;
+        }
+        tr:nth-child(even) { background-color: #F8F9F9; }
+        tr:hover { background-color: #EBF5FB; }
+
+        /* Контейнеры для графики */
+        .visual-container { 
+            text-align: center; 
+            background: #FFFFFF; 
+            padding: 25px; 
+            border: 1px solid #EAEDED; 
+            border-radius: 12px; 
+            margin: 30px 0; 
+            box-shadow: 0 6px 12px rgba(0,0,0,0.08); 
+        }
+        .caption {
+            font-family: 'Arial', sans-serif;
+            font-size: 13px;
+            color: #7F8C8D;
+            margin-top: 15px;
+            font-style: italic;
+        }
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        
+        /* Итоговый блок */
+        .summary-box {
+            background: linear-gradient(135deg, #F0F3F4 0%, #E5E8E8 100%);
+            border: 1px solid #CCD1D1;
+            padding: 30px;
+            border-radius: 12px;
+            text-align: center;
+            margin-top: 50px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+        }
+        .xp-badge {
+            display: inline-block;
+            background-color: #3498DB;
+            color: #FFFFFF;
+            font-weight: bold;
+            font-family: 'Segoe UI', sans-serif;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 16px;
+            margin: 15px 0;
+            box-shadow: 0 2px 5px rgba(52, 152, 219, 0.4);
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Архитектурный конспект: Общие сведения об Azure Data Lake Storage 2-го поколения</h1>
+
+    <div class="tldr-box">
+        <p><strong>TL;DR:</strong> <strong>Azure Data Lake Storage (ADLS) 2-го поколения</strong> — это не отдельный сервис, а набор возможностей для аналитики больших данных, встроенный поверх стандартного хранилища BLOB-объектов Azure. Включив одну галочку (Иерархическое пространство имен), вы превращаете дешевое хранилище объектов в сверхпроизводительную распределенную файловую систему, совместимую с Apache Hadoop и Spark.</p>
+    </div>
+
+    <!-- БЛОК 1: ЭВОЛЮЦИЯ ХРАНИЛИЩ -->
+    <h2>Модуль 1. Проблема реляционных хранилищ и появление Озер Данных</h2>
+
+    <p>На протяжении двух десятилетий организации строили свои решения бизнес-аналитики (BI) на базе <strong>Хранилищ данных (Data Warehouses)</strong>. Реляционные БД отлично подходили для структурированных транзакций, но с развитием технологий они столкнулись с фундаментальной проблемой.</p>
+
+    <div class="analogy-box">
+        <h3 style="margin-top: 0; color: #B7950B;">Ограничения Data Warehouse:</h3>
+        <ul>
+            <li><strong>Высокая стоимость:</strong> Хранить петабайты сырых логов и JSON в реляционной базе невероятно дорого (вы платите за мощный CPU и быстрые диски, даже если данные просто лежат).</li>
+            <li><strong>Сложность (Schema-on-write):</strong> Чтобы записать данные в реляционное хранилище, их сначала нужно очистить и подогнать под строгую структуру таблиц. Неструктурированные данные (картинки, видео, свободный текст) хранить там невозможно.</li>
+        </ul>
+    </div>
+
+    <p><strong>Решение — Data Lake (Озеро данных):</strong> Распределенная файловая система, которая позволяет сбрасывать данные в их исходном "сыром" виде. Озера оптимизированы для масштабирования до петабайт данных и используются движками больших данных (например, <em>Apache Spark</em>) для анализа.</p>
+
+    <!-- БЛОК 2: ЧТО ТАКОЕ ADLS GEN 2 -->
+    <h2>Модуль 2. Что такое ADLS Gen2 и как его включить?</h2>
+
+    <div class="deep-dive">
+        <h3>Под капотом (Deep Dive): Включение ADLS Gen2</h3>
+        <p>Архитектурно Azure Data Lake Storage 2-го поколения — это <strong>Хранилище BLOB-объектов Azure + Иерархическое пространство имен (HNS)</strong>. Это не автономная служба, а надстройка (возможность).</p>
+        <p>Ее можно включить для учетных записей:</p>
+        <ul>
+            <li><strong>Общего назначения уровня "Стандартный" v2 (GPv2)</strong> — наиболее распространенный и экономичный вариант.</li>
+            <li><strong>Блочного BLOB-объекта класса Premium</strong> — для рабочих нагрузок, критичных к задержкам и требующих максимальной пропускной способности.</li>
+        </ul>
+        
+        <div class="visual-container" style="margin: 20px 0;">
+            <img src="image_6afca5.png" alt="Включение HNS при создании">
+            <div class="caption">Рис 1. При создании учетной записи хранения на вкладке "Дополнительно" необходимо активировать чекбокс «Включить иерархическое пространство имен».</div>
+        </div>
+
+        <h4>Миграция существующих учетных записей</h4>
+        <p>Если у вас уже есть стандартное хранилище Blob (с плоским пространством имен), вы можете обновить его до ADLS Gen2 прямо на портале Azure через меню <strong>«Data Lake Gen2 upgrade»</strong>.</p>
+        
+        <div class="visual-container" style="margin: 20px 0;">
+            <img src="image_6afcbe.png" alt="Миграция существующего аккаунта">
+            <div class="caption">Рис 2. Процесс апгрейда существующей учетной записи. Во время обновления хранилище будет находиться в автономном режиме.</div>
+        </div>
+    </div>
+
+    <div class="best-practice">
+        <strong>Архитектурное предупреждение:</strong><br>
+        <span style="color: #27AE60; font-weight: bold;">✔ Правильно (Best Practice):</span> Включать HNS <em>в момент создания</em> учетной записи хранения для аналитических нагрузок.<br>
+        <span style="color: #C0392B; font-weight: bold;">✖ Критический нюанс:</span> Процесс обновления существующего хранилища через портал является <strong>односторонним (необратимым)</strong>. Вы не сможете вернуть учетную запись обратно в плоское пространство имен после завершения миграции!
+    </div>
+
+    <!-- НОВЫЙ БЛОК: МОДЕЛЬ БЕЗОПАСНОСТИ -->
+    <h2>Модуль 3. Многоуровневая модель безопасности (RBAC, ABAC и POSIX)</h2>
+
+    <p>Azure Data Lake Storage 2-го поколения предоставляет сверхточную модель управления доступом к данным, которая обрабатывает разрешения в несколько этапов:</p>
+
+    <div class="visual-container">
+        <div class="mermaid">
+            flowchart TD
+                A([Пользователь / Приложение]) -->|Запрос доступа к файлу| B(1. Azure RBAC)
+                B -->|Есть ли роль Storage Blob Data Reader?| C{Разрешено?}
+                C -- Да --> D[Доступ предоставлен]
+                C -- Нет --> E(2. Azure ABAC)
+                E -->|Совпадают ли условия / теги?| F{Разрешено?}
+                F -- Да --> D
+                F -- Нет --> G(3. Списки ACL POSIX)
+                G -->|Есть ли права r-w-x на конкретную папку/файл?| H{Разрешено?}
+                H -- Да --> D
+                H -- Нет --> I([Отказ в доступе - 403 Forbidden])
+                
+                style D fill:#2ECC71,stroke:#27AE60,color:#fff
+                style I fill:#E74C3C,stroke:#C0392B,color:#fff
+                style B fill:#D6EAF8,stroke:#3498DB
+                style E fill:#D6EAF8,stroke:#3498DB
+                style G fill:#FCF3CF,stroke:#F1C40F
+        </div>
+        <div class="caption">Рис 3. Диаграмма процесса авторизации. Если доступ не предоставлен на уровне контейнера (RBAC/ABAC), система проверяет права на конкретный файл/каталог (POSIX).</div>
+    </div>
+
+    <!-- БЛОК 4: BLOB VS ADLS GEN2 -->
+    <h2>Модуль 4. Сравнение Azure Blob Storage и ADLS Gen2</h2>
+
+    <p>Почему для аналитики недостаточно обычного хранилища Blob? Все дело в управлении папками и метаданными.</p>
+    
+    <div class="grid-2">
+        <div class="visual-container" style="margin-top: 0; padding: 15px;">
+            <img src="image_6a9be1.png" alt="Плоское пространство имен">
+            <div class="caption">Рис 4. Плоское пространство (Blob Storage). Папки <code>folder1</code> не существует. Имя файла — <code>folder1/blob2</code>.</div>
+        </div>
+        <div class="visual-container" style="margin-top: 0; padding: 15px;">
+            <img src="image_6a9bc6.png" alt="Иерархическое пространство имен">
+            <div class="caption">Рис 5. Иерархическое пространство (ADLS Gen2). Папка <code>Directory</code> является физическим объектом с метаданными.</div>
+        </div>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Характеристика</th>
+                <th>Azure Blob Storage (Обычное)</th>
+                <th>ADLS Gen2 (С включенным HNS)</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><strong>Структура</strong></td>
+                <td><strong>Плоское пространство имен (Flat).</strong> Папок не существует физически, это просто часть имени файла.</td>
+                <td><strong>Иерархическое пространство имен (HNS).</strong> Папки являются реальными объектами первого класса (сохраняют метаданные о файлах внутри).</td>
+            </tr>
+            <tr>
+                <td><strong>Производительность (Переименование/Удаление папок)</strong></td>
+                <td>Требует выполнения нескольких операций, число которых пропорционально количеству объектов внутри.</td>
+                <td><strong>Одна атомарная операция.</strong> Изменяется только метаданные самой папки. Критически снижает стоимость анализа для Big Data.</td>
+            </tr>
+            <tr>
+                <td><strong>Безопасность (Доступ)</strong></td>
+                <td>RBAC применяется на уровне всего контейнера.</td>
+                <td><strong>POSIX ACLs:</strong> Можно задать детальные права доступа на конкретную папку или даже отдельный файл внутри озера.</td>
+            </tr>
+            <tr>
+                <td><strong>Драйвер Hadoop</strong></td>
+                <td><code>wasb://</code></td>
+                <td><code>abfs://</code> (Azure Blob File System) — приложения могут обращаться как через Blob API, так и через Data Lake API.</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <div class="best-practice" style="background-color: #FEF9E7; border-left-color: #F1C40F;">
+        <h3 style="color: #B7950B; margin-top: 0;">Когда НЕ нужно включать HNS?</h3>
+        <p>Если вы хотите хранить данные <strong>без выполнения анализа</strong>, оставьте параметр «Включить иерархическое пространство имен» очищенным. Обычное хранилище BLOB-объектов идеально подходит для:</p>
+        <ul>
+            <li>Архивации редко используемых данных (Archive tier).</li>
+            <li>Хранения ресурсов статических веб-сайтов (изображения, аудио, CSS, скрипты).</li>
+            <li>Хранения дисков виртуальных машин (Page Blobs).</li>
+        </ul>
+    </div>
+
+    <!-- БЛОК 5: ЭТАПЫ АНАЛИТИКИ -->
+    <h2>Модуль 5. ADLS Gen2 в этапах аналитической обработки</h2>
+
+    <p>Озеро данных является центральным элементом классического конвейера больших данных. Любая архитектура работы с данными (Хранилище корпоративных данных, Аналитика в реальном времени, Машинное обучение) включает четыре фундаментальных стадии:</p>
+
+    <div class="visual-container">
+        <div class="mermaid">
+            flowchart LR
+                A[1. Прием \n Ingest] -->|Сырые данные| B[(2. Хранение \n Store)]
+                B -->|Очистка и Обучение| C{3. Подготовка \n Prep & Train}
+                C -->|Бизнес-логика| D[4. Моделирование \n Model & Serve]
+                
+                style B fill:#AED6F1,stroke:#3498DB,stroke-width:2px
+        </div>
+        <div class="caption">Рис 6. Четыре стадии обработки больших данных. ADLS Gen2 выступает надежным слоем Хранения (Store).</div>
+    </div>
+
+    <ol>
+        <li><strong>Прием (Ingest):</strong> Технологии для получения исходных данных (логов, файлов). Для пакетного приема (раз в сутки) используются конвейеры <em>Microsoft Fabric</em> или <em>Azure Data Factory</em>. Для потокового (в реальном времени) — <em>Event Hubs</em> или <em>Stream Analytics</em>.</li>
+        <li><strong>Хранение (Store):</strong> Azure Data Lake Storage 2-го поколения принимает все эти потоки данных. Он предоставляет масштабируемое решение, совместимое с форматами Big Data (Parquet, Delta Lake).</li>
+        <li><strong>Подготовка и обучение (Prep & Train):</strong> Распределенные системы (<em>Azure Databricks</em>, <em>Fabric Spark</em>) читают данные из озера, очищают их и используют для обучения ИИ-моделей (в <em>Azure Machine Learning</em>).</li>
+        <li><strong>Моделирование и Предоставление (Model & Serve):</strong> Очищенные данные подаются конечным пользователям через <em>Azure Synapse Analytics</em> или напрямую в дашборды <em>Microsoft Power BI</em>.</li>
+    </ol>
+
+
+    <!-- БЛОК 6: РАБОЧИЕ НАГРУЗКИ -->
+    <h2>Модуль 6. Использование ADLS Gen2 в аналитических рабочих нагрузках</h2>
+    <p>Рассмотрим, как именно ADLS Gen2 взаимодействует с другими сервисами Azure в реальных бизнес-сценариях.</p>
+
+    <div class="deep-dive">
+        <h3>Сценарий 1: Хранение данных (Data Warehousing / ETL)</h3>
+        <p>Данные извлекаются из операционных баз (Azure SQL, Cosmos DB) и помещаются в ADLS Gen2. Затем они обрабатываются и загружаются в реляционное хранилище данных (например, Azure Synapse) для отчетности.</p>
+        <div class="visual-container" style="margin-top: 15px; padding: 10px;">
+            <img src="image_6a8d17.png" alt="Сценарий Хранилища данных">
+            <div class="caption">Рис 7. Конвейер: Операционная БД -> Azure Data Factory (ETL) -> ADLS Gen2 -> Azure Synapse Analytics -> Power BI.</div>
+        </div>
+    </div>
+
+    <div class="deep-dive">
+        <h3>Сценарий 2: Аналитика в реальном времени (Real-Time Analytics)</h3>
+        <p>Непрерывные потоки данных (от датчиков IoT или соцсетей) фиксируются в очередях и обрабатываются без задержек. ADLS Gen2 выступает в роли "приемника" (sink) для сохранения истории этих потоков.</p>
+        <div class="visual-container" style="margin-top: 15px; padding: 10px;">
+            <img src="image_6a8cfd.png" alt="Аналитика в реальном времени">
+            <div class="caption">Рис 8. Конвейер: Потоковые данные -> Azure Event Hubs (Очередь) -> Azure Stream Analytics (Агрегация) -> ADLS Gen2 (Приемник).</div>
+        </div>
+    </div>
+
+    <div class="deep-dive">
+        <h3>Сценарий 3: Обработка, анализ данных и Машинное обучение (Data Science & ML)</h3>
+        <p>Обучение ИИ-моделей требует огромных объемов сырых данных. Специалисты по Data Science подключают кластеры вычислений напрямую к Озеру данных для тренировки прогнозных моделей.</p>
+        <div class="visual-container" style="margin-top: 15px; padding: 10px;">
+            <img src="image_6a8cf9.png" alt="Машинное обучение">
+            <div class="caption">Рис 9. Конвейер: ADLS Gen2 (Сырые данные) -> Загрузка в Azure Machine Learning (Python/Jupyter) -> Обученная модель.</div>
+        </div>
+    </div>
+
+
+    <!-- ИТОГИ -->
+    <div class="summary-box">
+        <h2 style="border: none; background: none; color: #2C3E50; margin: 0; padding: 0;">Сводка и Итоги</h2>
+        <div class="xp-badge">Завершено | Получено XP: 200</div>
+        
+        <div style="text-align: left; background: #FFFFFF; padding: 25px; border-radius: 8px; margin-top: 20px;">
+            <p><strong>Озера данных — это фундамент, на котором строятся все современные архитектуры аналитики и машинного обучения.</strong></p>
+            
+            <p>В этом модуле мы изучили:</p>
+            <ul style="color: #333; line-height: 1.8;">
+                <li><strong>Назначение:</strong> Почему реляционные базы не справляются с петабайтами неструктурированных файлов (изображения, логи, JSON).</li>
+                <li><strong>Архитектуру ADLS Gen2:</strong> Это расширение стандартного Azure Blob Storage, которое активируется через галочку <em>Иерархическое пространство имен (HNS)</em> (во время создания или миграции). Важно помнить, что миграция необратима.</li>
+                <li><strong>Преимущества перед Blob:</strong> Атомарное переименование/удаление папок, гранулярные списки контроля доступа (POSIX ACLs) и оптимизированный драйвер <code>abfs://</code>.</li>
+                <li><strong>Конвейер Больших Данных:</strong> 4 этапа обработки (Прием, Хранение, Подготовка, Моделирование), где ADLS Gen2 служит центральным узлом для хранения.</li>
+                <li><strong>Бизнес-сценарии:</strong> Интеграция Озера с Data Factory для ETL, со Stream Analytics для потоков и с Azure Machine Learning для ИИ.</li>
+            </ul>
+
+            <h3 style="color: #2980B9; font-size: 18px; margin-top: 25px;">Следующие шаги (Next Steps)</h3>
+            <p style="color: #555;">Теперь, когда вы поняли концепцию озер данных и их роль в различных рабочих нагрузках, переходите к изучению механизмов загрузки и трансформации данных в это озеро с помощью оркестраторов, таких как Azure Data Factory или пайплайнов Microsoft Fabric.</p>
+            
+            <div style="background: #EBF5FB; border-left: 4px solid #3498DB; padding: 15px; margin-top: 20px;">
+                <strong>Начало работы с Azure:</strong><br>
+                Выберите подходящую вам учетную запись Azure. Используйте оплату по мере использования или попробуйте Azure бесплатно в течение 30 дней.
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>

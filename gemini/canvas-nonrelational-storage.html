@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Архитектурный конспект: Нереляционные хранилища Azure</title>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+    <script>mermaid.initialize({startOnLoad:true, theme: 'default'});</script>
+    <style>
+        /* Базовые стили: Светлая тема, черный текст, Times New Roman 14px */
+        body {
+            font-family: 'Times New Roman', Times, serif;
+            font-size: 14px;
+            color: #000000;
+            background-color: #FAFAFA;
+            line-height: 1.6;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        /* Заголовки */
+        h1, h2, h3, h4 {
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            color: #2C3E50;
+            margin-top: 1.5em;
+            margin-bottom: 0.5em;
+        }
+        h1 { 
+            font-size: 30px; 
+            text-transform: uppercase; 
+            border-bottom: 3px solid #E74C3C; 
+            padding-bottom: 12px; 
+            color: #C0392B; 
+            text-align: center;
+        }
+        h2 { 
+            font-size: 24px; 
+            color: #2980B9; 
+            border-left: 5px solid #3498DB; 
+            padding-left: 15px; 
+            background-color: #EBF5FB;
+            padding: 10px 15px;
+            margin-top: 50px;
+        }
+        h3 { 
+            font-size: 18px; 
+            color: #8E44AD; 
+            font-style: italic; 
+            font-weight: bold;
+        }
+
+        /* Выделение кода */
+        code { 
+            font-family: 'Courier New', Courier, monospace; 
+            background-color: #EAECEE; 
+            padding: 3px 6px; 
+            border-radius: 4px; 
+            color: #C0392B; 
+            font-weight: bold; 
+            font-size: 13px;
+        }
+
+        /* Блоки контента */
+        .tldr-box { 
+            background-color: #E8F8F5; 
+            border: 1px solid #1ABC9C; 
+            padding: 20px; 
+            border-radius: 8px; 
+            margin-bottom: 25px; 
+            font-size: 15px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+        .analogy-box { 
+            background-color: #FEF9E7; 
+            border-left: 5px solid #F1C40F; 
+            padding: 20px; 
+            margin-bottom: 25px; 
+            border-radius: 0 8px 8px 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        .deep-dive { 
+            background-color: #F8F9F9; 
+            border: 1px solid #D5DBDB; 
+            padding: 20px; 
+            border-radius: 8px; 
+            margin: 25px 0; 
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+        .best-practice { 
+            background-color: #FDEDEC; 
+            border-left: 5px solid #E74C3C; 
+            padding: 20px; 
+            margin: 20px 0; 
+            border-radius: 0 8px 8px 0;
+        }
+
+        /* Таблицы */
+        table { 
+            width: 100%; 
+            border-collapse: collapse; 
+            margin: 25px 0; 
+            font-family: 'Segoe UI', sans-serif; 
+            font-size: 14px; 
+            background-color: #FFFFFF;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        th, td { 
+            border: 1px solid #BDC3C7; 
+            padding: 15px; 
+            text-align: left; 
+        }
+        th { 
+            background-color: #34495E; 
+            color: #FFFFFF; 
+            font-weight: 600;
+        }
+        tr:nth-child(even) { background-color: #F8F9F9; }
+        tr:hover { background-color: #EBF5FB; }
+
+        /* Контейнеры для графики */
+        .visual-container { 
+            text-align: center; 
+            background: #FFFFFF; 
+            padding: 25px; 
+            border: 1px solid #EAEDED; 
+            border-radius: 12px; 
+            margin: 30px 0; 
+            box-shadow: 0 6px 12px rgba(0,0,0,0.08); 
+        }
+        .visual-container img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+        }
+        .caption {
+            font-family: 'Arial', sans-serif;
+            font-size: 13px;
+            color: #7F8C8D;
+            margin-top: 15px;
+            font-style: italic;
+        }
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Архитектурный конспект: Нереляционные хранилища Azure (Blob Storage)</h1>
+
+    <div class="tldr-box">
+        <p><strong>TL;DR:</strong> Не всем данным нужна жесткая реляционная схема SQL. <strong>Azure Blob Storage</strong> — это фундаментальная служба для хранения петабайтов неструктурированных файлов (изображений, логов, бэкапов). Она обеспечивает масштабируемость, гранулярный контроль доступа (RBAC), управление жизненным циклом и аппаратную отказоустойчивость.</p>
+    </div>
+
+    <!-- БЛОК 1: ИЕРАРХИЯ И ТИПЫ БЛОБОВ -->
+    <h2>Модуль 1. Архитектура хранилища и Типы Blob-объектов</h2>
+
+    <div class="visual-container">
+        <img src="image_bb711c.png" alt="Иерархия Azure Storage">
+        <div class="caption">Рис 1. Иерархия: Учетная запись -> Контейнер -> Виртуальные папки -> Blob.</div>
+    </div>
+
+    <div class="deep-dive">
+        <h3>Под капотом (Deep Dive): Выбор типа Blob-объекта и Хард-лимиты</h3>
+        <p>Служба хранилища Azure аппаратно оптимизирует запись и чтение в зависимости от того, как ваше приложение работает с файлом. При проектировании Enterprise-систем критически важно знать системные ограничения (Limits).</p>
+        
+        <table style="margin-top: 15px;">
+            <thead>
+                <tr>
+                    <th>Тип BLOB</th>
+                    <th>Механика и Архитектурные Лимиты</th>
+                    <th>Применение (Use Case)</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>Блочные (Block Blobs)</strong></td>
+                    <td>Файл делится на независимые блоки (до <strong>4000 МиБ</strong> в новых версиях API). <br>Максимальное количество блоков: 50 000.<br><span style="color:#C0392B;">Макс. размер файла: ~190,7 ТиБ.</span><br>Целевая пропускная способность: до 3000 запросов в секунду.</td>
+                    <td>Хранение картинок, видео, документов, статических веб-сайтов. (Обычные файлы).</td>
+                </tr>
+                <tr>
+                    <td><strong>Страничные (Page Blobs)</strong></td>
+                    <td>Массив страниц по 512 байт. Можно читать и писать данные в случайную позицию мгновенно.<br><span style="color:#C0392B;">Макс. размер файла: 8 ТиБ.</span><br>Целевая пропускная способность: до 500 запросов в секунду.</td>
+                    <td>Фундамент для дисков Виртуальных машин Azure (VHD). Базы данных.</td>
+                </tr>
+                <tr>
+                    <td><strong>Добавочные (Append Blobs)</strong></td>
+                    <td>Блоки добавляются <em>только в конец файла</em> (макс. блок 4 МиБ). Нельзя изменить или удалить старые блоки.<br><span style="color:#C0392B;">Макс. размер файла: ~195 ГиБ.</span></td>
+                    <td>Идеально для потоковой записи системных журналов (логов), метрик телеметрии IoT.</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="deep-dive" style="border-left: 5px solid #E74C3C; background-color: #FDEDEC;">
+        <h3 style="color: #C0392B; margin-top: 0;">Масштабируемость аккаунта Storage (GPv2)</h3>
+        <p>Для стандартной учетной записи хранения (General Purpose v2) Azure применяет следующие жесткие квоты (лимиты), которые можно повысить только через запрос в техподдержку:</p>
+        <ul>
+            <li><strong>Емкость аккаунта (Capacity):</strong> <strong>5 PiB (Пебибайт)</strong>.</li>
+            <li><strong>Транзакции управления (Control Plane):</strong> Операции чтения (например, список аккаунтов) ограничены 800 запросов за 5 минут. Операции записи — 10 в секунду.</li>
+            <li><strong>Входящий трафик (Ingress):</strong> От <strong>25 до 60 Гбит/с</strong> в зависимости от региона.</li>
+            <li><strong>Исходящий трафик (Egress):</strong> От <strong>50 до 200 Гбит/с</strong> в зависимости от региона.</li>
+            <li><strong>Лимит запросов (Data Plane):</strong> 20 000 – 40 000 запросов в секунду.</li>
+        </ul>
+    </div>
+
+
+    <!-- БЛОК 2: УПРАВЛЕНИЕ ЗАТРАТАМИ И УРОВНИ ДОСТУПА -->
+    <h2>Модуль 2. Экономика хранения (Уровни доступа и Жизненный цикл)</h2>
+
+    <div class="visual-container">
+        <div class="mermaid">
+            stateDiagram-v2
+                direction LR
+                [*] --> Hot: Создание файла
+                Hot --> Cool: Правило:\n> 30 дней без доступа
+                Cool --> Archive: Правило:\n> 90 дней без доступа
+                Archive --> Deleted: Правило:\n> 365 дней (Удаление)
+                
+                Archive --> Hot: Rehydration\n(Восстановление до 15 ч.)
+                
+                classDef hot fill:#FAD7A1,stroke:#E67E22
+                classDef cool fill:#AED6F1,stroke:#2980B9
+                classDef arch fill:#D5DBDB,stroke:#7F8C8D
+                
+                class Hot hot
+                class Cool cool
+                class Archive arch
+        </div>
+        <div class="caption">Рис 2. Автоматическое управление жизненным циклом данных (Lifecycle Management). Удешевление хранения по мере "остывания" файлов.</div>
+    </div>
+
+    <h3>Trade-offs (Компромиссы уровней доступа)</h3>
+    <p>Архитектура хранения всегда балансирует между <em>стоимостью хранения 1 ГБ</em> и <em>стоимостью/задержкой чтения</em>.</p>
+    
+    <table>
+        <thead>
+            <tr>
+                <th>Уровень</th>
+                <th>Стоимость хранения</th>
+                <th>Штраф за раннее удаление</th>
+                <th>Бизнес-контекст</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><strong>Горячий (Hot)</strong></td>
+                <td>Самая высокая</td>
+                <td>Нет</td>
+                <td>Активные данные приложения. Чтение/запись происходят прямо сейчас (например, аватарки активных юзеров).</td>
+            </tr>
+            <tr>
+                <td><strong>Холодный (Cool)</strong></td>
+                <td>Ниже</td>
+                <td>Минимум 30 дней</td>
+                <td>Данные, к которым обращаются 1-2 раза в месяц. (Отчеты за прошлый месяц).</td>
+            </tr>
+            <tr>
+                <td><strong>Архив (Archive)</strong></td>
+                <td>Копейки (Lowest)</td>
+                <td>Минимум 180 дней</td>
+                <td>Законодательные архивы, логи за 5 лет. <strong>Важно:</strong> Блоб в оффлайне. Для чтения требуется процесс <em>восстановления (rehydration)</em>, занимающий до 15 часов.</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <!-- БЛОК 3: ИЗБЫТОЧНОСТЬ И ОТКАЗОУСТОЙЧИВОСТЬ -->
+    <h2>Модуль 3. Стратегии избыточности (Redundancy)</h2>
+
+    <div class="deep-dive">
+        <h3>Под капотом (Deep Dive): Репликация данных</h3>
+        <p>Azure никогда не хранит файл в одном экземпляре. По умолчанию всегда создается минимум 3 копии.</p>
+        <ul>
+            <li><strong>LRS (Locally Redundant):</strong> 3 копии в одной стойке/серверной. Если сгорит ЦОД — данные потеряны.</li>
+            <li><strong>ZRS (Zone-Redundant):</strong> Копии распределены по 3 разным зданиям (зонам доступности) внутри одного региона.</li>
+            <li><strong>GRS (Geo-Redundant):</strong> LRS в основном регионе + асинхронная репликация LRS в резервный регион (за сотни километров).</li>
+            <li><strong>GZRS (Geo-Zone-Redundant):</strong> Максимальная защита. ZRS в основном регионе + репликация LRS в резервный регион.</li>
+        </ul>
+        <p><em>Бизнес-контекст:</em> Добавление префикса <strong>RA- (Read-Access)</strong> к гео-опциям позволяет приложению переключиться на чтение из резервного региона при сбое.</p>
+    </div>
+
+    <!-- БЛОК 4: ADLS GEN 2 И ДРУГИЕ СЛУЖБЫ -->
+    <h2>Модуль 4. ADLS Gen2, Azure Files, Tables и Queues</h2>
+
+    <div class="tldr-box">
+        <p><strong>Azure Data Lake Storage Gen2 (ADLS)</strong> добавляет к Blob-хранилищу <em>иерархическое пространство имен (HNS)</em>. Папки становятся реальными объектами, что позволяет назначать POSIX-права и мгновенно переименовывать гигантские каталоги (Оптимизация для Big Data / Apache Spark).</p>
+    </div>
+
+    <h3>Лимиты других служб Azure Storage</h3>
+    <p>Для полноты картины инфраструктуры, рассмотрим аппаратные ограничения смежных служб хранения:</p>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Служба</th>
+                <th>Назначение</th>
+                <th>Жесткие лимиты (Limits & Quotas)</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><strong>Azure Table Storage</strong></td>
+                <td>Быстрая NoSQL БД (Ключ-Значение)</td>
+                <td>Макс. размер одной таблицы: <strong>500 ТиБ</strong>.<br>Макс. размер сущности (строки): <strong>1 МиБ</strong> (до 255 свойств).<br>Пропускная способность: до 20 000 транзакций в секунду на аккаунт.</td>
+            </tr>
+            <tr>
+                <td><strong>Azure Queue Storage</strong></td>
+                <td>Обмен сообщениями между микросервисами</td>
+                <td>Макс. размер одной очереди: <strong>500 ТиБ</strong>.<br>Макс. размер сообщения: <strong>64 КиБ</strong>.<br>Пропускная способность: до 2000 сообщений в сек. для одной очереди.</td>
+            </tr>
+            <tr>
+                <td><strong>Azure Files</strong></td>
+                <td>Сетевые диски (SMB / NFS)</td>
+                <td>Premium-уровень (SSD) поддерживает емкость до <strong>256 ТиБ</strong>. Макс. размер одного файла: <strong>4 ТиБ</strong>.</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <div class="best-practice">
+        <strong>Best Practices vs. Anti-patterns:</strong><br>
+        <span style="color: #27AE60; font-weight: bold;">✔ Правильно (Best Practice):</span> Включать иерархическое пространство имен (HNS) <em>при создании</em> учетной записи хранения, если вы планируете использовать её как Data Lake.<br>
+        <span style="color: #C0392B; font-weight: bold;">✖ Неправильно (Anti-pattern):</span> Размещать реляционные данные с жесткими связями в Azure Table Storage. Azure Table не поддерживает <code>JOIN</code>, а для высокой производительности требует обязательного указания <code>PartitionKey</code> в фильтре запроса.
+    </div>
+
+    <!-- ИТОГИ -->
+    <div class="summary-box" style="margin-bottom: 40px;">
+        <h2 style="border: none; background: none; color: #2C3E50; margin: 0; padding: 0;">Сводка и Практические Итоги</h2>
+        <div class="xp-badge" style="background-color: #1ABC9C;">Завершено | Получено XP: 100</div>
+        
+        <div style="text-align: left; background: #FFFFFF; padding: 25px; border-radius: 8px; margin-top: 20px;">
+            <p><strong>В этом модуле мы изучили архитектурные лимиты и механики хранения нереляционных данных в Azure.</strong></p>
+            
+            <ul style="color: #333; line-height: 1.8;">
+                <li><strong>Blob Storage:</strong> Понимание разницы между блочными (до 190 ТиБ), страничными (диски ВМ) и добавочными (логи) блобами, а также лимитов аккаунта на пропускную способность (до 200 Гбит/с).</li>
+                <li><strong>Экономика:</strong> Использование политик жизненного цикла для перемещения файлов между уровнями Hot, Cool и Archive.</li>
+                <li><strong>Отказоустойчивость:</strong> Выбор стратегии репликации (LRS/ZRS/GRS) с учетом требований бизнеса к выживаемости при потере дата-центра или целого региона.</li>
+                <li><strong>Масштабируемость других служб:</strong> Жесткие лимиты на размер сущностей в Azure Tables (1 МиБ) и сообщений в Queues (64 КиБ).</li>
+            </ul>
+        </div>
+    </div>
+
+</body>
+</html>

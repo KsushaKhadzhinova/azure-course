@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Архитектурный конспект: Общие сведения об аналитике данных в Azure</title>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+    <script>mermaid.initialize({startOnLoad:true, theme: 'default'});</script>
+    <style>
+        /* Базовые стили: Светлая тема, черный текст, Times New Roman 14px */
+        body {
+            font-family: 'Times New Roman', Times, serif;
+            font-size: 14px;
+            color: #000000;
+            background-color: #FAFAFA;
+            line-height: 1.6;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        /* Заголовки */
+        h1, h2, h3, h4 {
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            color: #2C3E50;
+            margin-top: 1.5em;
+            margin-bottom: 0.5em;
+        }
+        h1 { 
+            font-size: 30px; 
+            text-transform: uppercase; 
+            border-bottom: 3px solid #8E44AD; 
+            padding-bottom: 12px; 
+            color: #7D3C98; 
+            text-align: center;
+        }
+        h2 { 
+            font-size: 24px; 
+            color: #2980B9; 
+            border-left: 5px solid #3498DB; 
+            padding-left: 15px; 
+            background-color: #EBF5FB;
+            padding: 10px 15px;
+            margin-top: 50px;
+        }
+        h3 { 
+            font-size: 18px; 
+            color: #E67E22; 
+            font-style: italic; 
+            font-weight: bold;
+        }
+
+        /* Выделение кода */
+        code { 
+            font-family: 'Courier New', Courier, monospace; 
+            background-color: #EAECEE; 
+            padding: 3px 6px; 
+            border-radius: 4px; 
+            color: #C0392B; 
+            font-weight: bold; 
+            font-size: 13px;
+        }
+
+        /* Блоки контента */
+        .tldr-box { 
+            background-color: #F4ECF7; 
+            border: 1px solid #D7BDE2; 
+            padding: 20px; 
+            border-radius: 8px; 
+            margin-bottom: 25px; 
+            font-size: 15px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+        .analogy-box { 
+            background-color: #FEF9E7; 
+            border-left: 5px solid #F1C40F; 
+            padding: 20px; 
+            margin-bottom: 25px; 
+            border-radius: 0 8px 8px 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        .deep-dive { 
+            background-color: #F8F9F9; 
+            border: 1px solid #D5DBDB; 
+            padding: 20px; 
+            border-radius: 8px; 
+            margin: 25px 0; 
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+        .best-practice { 
+            background-color: #E8F8F5; 
+            border-left: 5px solid #1ABC9C; 
+            padding: 20px; 
+            margin: 20px 0; 
+            border-radius: 0 8px 8px 0;
+        }
+
+        /* Таблицы */
+        table { 
+            width: 100%; 
+            border-collapse: collapse; 
+            margin: 25px 0; 
+            font-family: 'Segoe UI', sans-serif; 
+            font-size: 14px; 
+            background-color: #FFFFFF;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        th, td { 
+            border: 1px solid #BDC3C7; 
+            padding: 15px; 
+            text-align: left; 
+        }
+        th { 
+            background-color: #34495E; 
+            color: #FFFFFF; 
+            font-weight: 600;
+        }
+        tr:nth-child(even) { background-color: #F8F9F9; }
+        tr:hover { background-color: #EBF5FB; }
+
+        /* Контейнеры для графики */
+        .visual-container { 
+            text-align: center; 
+            background: #FFFFFF; 
+            padding: 25px; 
+            border: 1px solid #EAEDED; 
+            border-radius: 12px; 
+            margin: 30px 0; 
+            box-shadow: 0 6px 12px rgba(0,0,0,0.08); 
+        }
+        .visual-container img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+        }
+        .caption {
+            font-family: 'Arial', sans-serif;
+            font-size: 13px;
+            color: #7F8C8D;
+            margin-top: 15px;
+            font-style: italic;
+        }
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Архитектурный конспект: Аналитика больших данных в Azure</h1>
+
+    <div class="tldr-box">
+        <p><strong>TL;DR:</strong> Крупномасштабная аналитика объединяет традиционные хранилища (Data Warehouse) с большими озерами данных (Data Lake), порождая архитектуру <strong>Lakehouse</strong>. В Azure двумя столпами современной аналитики являются <strong>Microsoft Fabric</strong> (SaaS "всё включено") и <strong>Azure Databricks</strong> (PaaS на базе Apache Spark).</p>
+    </div>
+
+    <div class="analogy-box">
+        <strong>Аналогия из жизни (Водопровод и Завод по розливу воды):</strong><br>
+        <p>Сбор данных похож на добычу воды из разных источников (дождь, реки, скважины).
+        <ul>
+            <li><strong>Data Lake (Озеро):</strong> Огромный природный резервуар. Сюда стекает вода (данные) в любом виде. Хранить дешево, но пить (анализировать) напрямую сложно.</li>
+            <li><strong>Data Warehouse (Склад):</strong> Завод, где воду очистили и разлили по строгим 5-литровым бутылкам (реляционные таблицы). Идеально для продажи, но дорого и долго.</li>
+            <li><strong>Lakehouse:</strong> Вы ставите фильтры и краны <em>прямо на озере</em>. Вы получаете и низкую цену хранения озера, и чистоту/структуру завода.</li>
+        </ul>
+        </p>
+    </div>
+
+    <!-- БЛОК 1: АРХИТЕКТУРА -->
+    <h2>Модуль 1. Архитектура крупномасштабной аналитики</h2>
+
+    <div class="visual-container">
+        <img src="image_3f4eb4.png" alt="Общая архитектура аналитики">
+        <div class="caption">Рис 1. Классическая архитектура: Системы-источники -> Уровень хранения (Хранилище/Озеро/Lakehouse) -> Аналитика и Визуализация.</div>
+    </div>
+
+    <p>Любое аналитическое решение строится на 5 обязательных этапах:</p>
+
+    <div class="visual-container">
+        <img src="image_3e0bd8.png" alt="5 этапов аналитики">
+        <div class="caption">Рис 2. Конвейер: 1) Прием (Ingest), 2) Хранение, 3) Семантическая модель, 4) Визуализация, 5) ИИ-ассистенты (Copilot).</div>
+    </div>
+
+    <ol>
+        <li><strong>Прием и обработка (ETL / ELT):</strong> Извлечение из OLTP-баз, очистка и загрузка. При пакетной обработке данные переносятся по расписанию. При потоковой — в реальном времени.</li>
+        <li><strong>Аналитическое хранилище:</strong> Место, где данные лежат физически (Warehouse, Lake, Lakehouse).</li>
+        <li><strong>Семантическая модель:</strong> Прослойка бизнес-логики. Вместо старых "OLAP-кубов", сейчас строятся табличные модели (с использованием языка <code>DAX</code>), где меры вычисляются на лету. В Fabric режим <em>Direct Lake</em> позволяет читать данные прямо из OneLake без копирования!</li>
+        <li><strong>Визуализация:</strong> Дашборды в Power BI для принятия управленческих решений.</li>
+        <li><strong>ИИ-Аналитика:</strong> Copilot в Fabric и Genie в Databricks позволяют задавать вопросы к данным на естественном языке, генерируя SQL или DAX "под капотом".</li>
+    </ol>
+
+
+    <!-- БЛОК 2: ТИПЫ ХРАНИЛИЩ -->
+    <h2>Модуль 2. Эволюция хранилищ: Warehouse vs Lake vs Lakehouse</h2>
+
+    <div class="deep-dive">
+        <h3>1. Data Warehouse (Хранилище данных)</h3>
+        <p>Реляционная база данных, оптимизированная не для записи транзакций, а для чтения гигантских агрегаций. Данные организуются в схему <strong>«Звезда» (Star Schema)</strong> или <strong>«Снежинка» (Snowflake Schema)</strong>, состоящую из таблиц <em>Фактов</em> (цифры, продажи) и таблиц <em>Измерений</em> (категории, даты, клиенты).</p>
+        <div class="visual-container" style="margin: 15px 0;">
+            <img src="image_3e07f8.jpg" alt="Star Schema vs Snowflake">
+            <div class="caption">Рис 3. Слева: Схема Звезда (денормализованные измерения). Справа: Снежинка (измерения нормализованы). Звезда работает быстрее для аналитики.</div>
+        </div>
+    </div>
+
+    <div class="deep-dive">
+        <h3>2. Data Lake (Озеро данных)</h3>
+        <p>Распределенная файловая система. Использует подход <strong>«Схема при чтении» (Schema-on-read)</strong>. Вы просто сваливаете сырые JSON, CSV и Parquet в озеро. А когда Apache Spark читает их, он "натягивает" на них табличную структуру в оперативной памяти.</p>
+        <div class="visual-container" style="margin: 15px 0;">
+            <img src="image_3e07da.jpg" alt="Schema-on-read">
+            <div class="caption">Рис 4. Принцип работы озера: храним любые форматы (Schema-on-write), а структуру задаем только в момент запроса (Schema-on-read).</div>
+        </div>
+    </div>
+
+    <div class="deep-dive">
+        <h3>3. Data Lakehouse (Гибрид)</h3>
+        <p>Необработанные данные лежат в Озере (дешево), но поверх них добавляется транзакционный слой (Delta Lake). Это позволяет использовать SQL-запросы (как в Warehouse), обеспечивая ACID-транзакции прямо поверх файлов Parquet.</p>
+        <div class="visual-container" style="margin: 15px 0;">
+            <img src="image_3e07be.png" alt="Data Lakehouse">
+            <div class="caption">Рис 5. Lakehouse объединяет лучшие черты складов и озер. Стандарт индустрии — формат Delta Lake.</div>
+        </div>
+    </div>
+
+
+    <!-- БЛОК 3: ПРИЕМ ДАННЫХ -->
+    <h2>Модуль 3. Инструменты приема данных (Data Ingestion)</h2>
+
+    <div class="visual-container">
+        <img src="image_3e0b02.png" alt="Инструменты загрузки данных">
+        <div class="caption">Рис 6. Конвейеры Ingestion: Источники -> Фабрики данных / Shortcuts / Databricks -> Lakehouse.</div>
+    </div>
+
+    <p>Как данные попадают в хранилище? Платформы предлагают разные инструменты:</p>
+    <table>
+        <thead>
+            <tr>
+                <th>Механизм</th>
+                <th>Платформа</th>
+                <th>Как это работает</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><strong>Data Factory (Pipelines / Dataflows Gen2)</strong></td>
+                <td>Fabric & Azure</td>
+                <td>Low-code интерфейс. <em>Pipelines</em> оркестрируют шаги, <em>Dataflows</em> трансформируют данные визуально.<br><strong>Лимиты:</strong> До 5 000 сущностей на фабрику, 10 000 одновременных запусков конвейеров, максимум 120 активностей в одном конвейере.</td>
+            </tr>
+            <tr>
+                <td><strong>Shortcuts (Ярлыки)</strong></td>
+                <td>Fabric (OneLake)</td>
+                <td><strong>Zero Copy!</strong> Виртуальная ссылка на Amazon S3 или ADLS. Данные не копируются, но доступны для SQL.</td>
+            </tr>
+            <tr>
+                <td><strong>Mirroring (Зеркалирование)</strong></td>
+                <td>Fabric</td>
+                <td>Автоматическая непрерывная репликация из Cosmos DB или Snowflake в OneLake в реальном времени. Без создания пайплайнов!</td>
+            </tr>
+            <tr>
+                <td><strong>Eventstream</strong></td>
+                <td>Fabric</td>
+                <td>Перехват потоковых данных (Kafka, IoT) и маршрутизация их в KQL базы данных (Eventhouse).</td>
+            </tr>
+            <tr>
+                <td><strong>Lakeflow Pipelines / Auto Loader</strong></td>
+                <td>Databricks</td>
+                <td>Декларативные пайплайны на базе Spark, которые автоматически обрабатывают новые файлы (инкрементально) по мере их появления.</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <div class="deep-dive" style="border-left: 5px solid #3498DB;">
+        <h3 style="color: #2980B9; margin-top: 0;">Архитектурные ограничения рабочих областей (Synapse & ADF Limits)</h3>
+        <p>Для предотвращения влияния рабочих нагрузок одних клиентов на других ("шумные соседи"), в Azure применяются следующие квоты:</p>
+        <ul>
+            <li><strong>Azure Synapse Analytics:</strong> Допускается создание до 20 рабочих областей на регион (увеличивается до 100 через техподдержку). Внутри одной рабочей области можно создать максимум <strong>800 конвейеров (pipelines)</strong>.</li>
+            <li><strong>Среды Integration Runtime (IR):</strong> Количество связанных узлов Self-Hosted IR ограничено 100 на фабрику данных. Лимит вычислительных единиц (DIU) для копирования в Azure IR может достигать 6000 DIU для основных регионов.</li>
+            <li><strong>Полезная нагрузка активностей:</strong> Максимальный размер полезной нагрузки (payload) для каждого запуска активности строго ограничен <strong>896 КБ</strong>. Это необходимо учитывать при передаче больших массивов параметров между шагами.</li>
+        </ul>
+    </div>
+
+    <!-- БЛОК 4: FABRIC vs DATABRICKS -->
+    <h2>Модуль 4. Современный стек: Microsoft Fabric vs Azure Databricks</h2>
+
+    <div class="best-practice">
+        <strong>Архитектурный выбор платформы:</strong><br>
+        <ul style="margin-top: 10px;">
+            <li><strong>Microsoft Fabric (SaaS):</strong> Выбирайте, если нужна платформа "всё включено" для всей компании. Не нужно управлять серверами. Единый <strong>OneLake</strong>. Интеграция Lakehouse, Warehouse и Power BI "из коробки". Фокус на простоте и Low-Code.</li>
+            <li><strong>Azure Databricks (PaaS):</strong> Выбирайте, если у вас мощная команда Data-инженеров, пишущая сложный код на Python/Scala. Высшая производительность Spark, гибкий контроль над кластерами, межоблачная переносимость (работает в AWS/GCP). Единый слой управления <strong>Unity Catalog</strong>.</li>
+        </ul>
+    </div>
+
+
+    <!-- БЛОК 5: ПРАКТИКА -->
+    <h2>Модуль 5. Практическая лаборатория (Fabric Lakehouse & SQL Endpoint)</h2>
+
+    <div class="tldr-box">
+        <p><strong>TL;DR:</strong> В Microsoft Fabric аналитика начинается с создания Рабочей области (Workspace) с включенной емкостью (Capacity). Внутри нее мы создаем Lakehouse, импортируем сырые данные через <strong>Copy Job</strong> (без кода) и мгновенно анализируем их через SQL.</p>
+    </div>
+
+    <h3>Шаг 1. Создание рабочей области (Workspace)</h3>
+    <p>Рабочая область — это папка проекта. Включение лицензии "Fabric / Trial" дает ей вычислительные мощности.</p>
+    <div class="grid-2">
+        <div class="visual-container" style="margin: 10px 0; padding: 10px;">
+            <img src="image_3e03e0.png" alt="Fabric Welcome">
+            <div class="caption">1. Переключение на Data Engineering Experience в меню Fabric.</div>
+        </div>
+        <div class="visual-container" style="margin: 10px 0; padding: 10px;">
+            <img src="image_3e039d.png" alt="Создать Workspace">
+            <div class="caption">2. Нажатие + New workspace в боковом меню.</div>
+        </div>
+        <div class="visual-container" style="margin: 10px 0; padding: 10px;">
+            <img src="image_3e00d6.png" alt="Настройки Workspace">
+            <div class="caption">3. Указание имени и выбор лицензии Capacity (Premium/Trial).</div>
+        </div>
+        <div class="visual-container" style="margin: 10px 0; padding: 10px;">
+            <img src="image_3e00b8.png" alt="Пустой Workspace">
+            <div class="caption">4. Пустая рабочая область готова к созданию Lakehouse.</div>
+        </div>
+    </div>
+
+    <h3>Шаг 2. Создание Lakehouse</h3>
+    <p>Lakehouse объединяет гибкость файлового хранилища с транзакционностью баз данных. Создадим его в нашей новой рабочей области.</p>
+    <div class="grid-2">
+        <div class="visual-container" style="margin: 10px 0; padding: 10px;">
+            <img src="image_3e007c.png" alt="Создание Lakehouse">
+            <div class="caption">1. Выбор элемента Lakehouse в меню New item.</div>
+        </div>
+        <div class="visual-container" style="margin: 10px 0; padding: 10px;">
+            <img src="image_3e0057.png" alt="Имя Lakehouse">
+            <div class="caption">2. Присвоение имени (например, taxi_lakehouse) и создание.</div>
+        </div>
+    </div>
+
+    <div class="deep-dive">
+        <h3>Шаг 3. Загрузка данных (Data Ingestion) через Copy Job</h3>
+        <p>Чтобы не писать код на Python/Spark для загрузки сырых файлов, мы используем мастер <strong>Copy Job</strong>. Он позволит импортировать открытый набор данных (NYC Taxi) и сохранить его напрямую в виде управляемой таблицы (Tables) в формате Delta.</p>
+        
+        <div class="grid-2">
+            <div class="visual-container" style="margin: 10px 0; padding: 10px;">
+                <img src="image_3dffdd.png" alt="New copy job">
+                <div class="caption">1. Запуск мастера копирования (Get data -> New copy job).</div>
+            </div>
+            <div class="visual-container" style="margin: 10px 0; padding: 10px;">
+                <img src="image_3dffc0.png" alt="Имя задачи">
+                <div class="caption">2. Создание задачи Ingest Data.</div>
+            </div>
+            <div class="visual-container" style="margin: 10px 0; padding: 10px;">
+                <img src="image_3dfd16.png" alt="Выбор источника">
+                <div class="caption">3. Выбор открытого датасета (NYC Taxi - Green) из вкладки Sample data.</div>
+            </div>
+            <div class="visual-container" style="margin: 10px 0; padding: 10px;">
+                <img src="image_3dfcf4.png" alt="Настройки загрузки">
+                <div class="caption">4. Настройка: Full copy (Полная копия) с записью в папку Tables (создание Delta-таблицы).</div>
+            </div>
+            <div class="visual-container" style="margin: 10px 0; padding: 10px;">
+                <img src="image_3dfcd4.png" alt="Маппинг таблиц">
+                <div class="caption">5. Маппинг: Назначение схемы dbo и имени таблицы (taxi_rides).</div>
+            </div>
+            <div class="visual-container" style="margin: 10px 0; padding: 10px;">
+                <img src="image_3dfc9d.png" alt="Проверка и запуск">
+                <div class="caption">6. Проверка настроек (Review + save) и немедленный запуск (Save + Run).</div>
+            </div>
+            <div class="visual-container" style="margin: 10px 0; padding: 10px;">
+                <img src="image_3dfc96.png" alt="Статус выполнения">
+                <div class="caption">7. Успешное выполнение конвейера (Status: Succeeded).</div>
+            </div>
+            <div class="visual-container" style="margin: 10px 0; padding: 10px;">
+                <img src="image_3dfc7a.png" alt="Просмотр таблицы">
+                <div class="caption">8. Появление готовой таблицы taxi_rides в интерфейсе Lakehouse Explorer.</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="deep-dive">
+        <h3>Шаг 4. SQL-Аналитика</h3>
+        <p>Как только Copy Job завершается, Fabric автоматически генерирует <strong>SQL Analytics Endpoint (Конечную точку аналитики SQL)</strong>. Переключившись на нее, можно писать стандартные SQL-запросы прямо в браузере, например:</p>
+        
+        <div class="grid-2">
+            <div class="visual-container" style="margin: 10px 0; padding: 10px;">
+                <img src="image_3dfc5c.png" alt="Переключение на SQL Analytics Endpoint">
+                <div class="caption">1. Переключение контекста Lakehouse на SQL analytics endpoint.</div>
+            </div>
+            <div class="visual-container" style="margin: 10px 0; padding: 10px;">
+                <img src="image_3dfc3f.png" alt="Выполнение SQL-запроса">
+                <div class="caption">2. Написание и запуск (Run) агрегирующего T-SQL запроса.</div>
+            </div>
+        </div>
+
+        <code>
+<pre>
+SELECT DATENAME(dw, lpepPickupDatetime) AS Day,
+       AVG(tripDistance) As AvgDistance
+FROM taxi_rides 
+GROUP BY DATENAME(dw, lpepPickupDatetime)
+</pre>
+        </code>
+        <p><em>Результат:</em> Система группирует поездки по дням недели и вычисляет среднюю дистанцию, сканируя Parquet-файлы "под капотом" с помощью T-SQL движка.</p>
+    </div>
+
+    <!-- ИТОГИ -->
+    <div style="background: linear-gradient(135deg, #F5EEF8 0%, #EBDEF0 100%); border: 1px solid #D7BDE2; padding: 30px; border-radius: 12px; text-align: center; margin-top: 50px; box-shadow: 0 10px 20px rgba(0,0,0,0.05);">
+        <h2 style="border: none; background: none; color: #4A235A; margin: 0; padding: 0;">Сводка</h2>
+        <div style="display: inline-block; background-color: #8E44AD; color: #FFFFFF; font-weight: bold; font-family: 'Segoe UI', sans-serif; padding: 8px 16px; border-radius: 20px; font-size: 16px; margin: 15px 0; box-shadow: 0 2px 5px rgba(142, 68, 173, 0.4);">Завершено | XP: 100</div>
+        
+        <div style="text-align: left; background: #FFFFFF; padding: 25px; border-radius: 8px; margin-top: 20px;">
+            <p><strong>Крупномасштабное хранение данных — это сложная рабочая нагрузка, которая может включать множество разных технологий.</strong> В этом модуле представлен общий обзор ключевых функций современного решения для хранения данных и рассматриваются некоторые службы в Azure, которые можно использовать для реализации.</p>
+            
+            <p>Из этого модуля вы узнали, как выполнять следующие задачи:</p>
+            <ul style="color: #333; line-height: 1.8;">
+                <li>Определить основные элементы крупномасштабного решения для хранения данных.</li>
+                <li>Описывать главные возможности конвейеров приема данных.</li>
+                <li>Определять распространённые типы аналитических хранилищ данных и связанные службы Azure.</li>
+                <li>Подготовка Microsoft Fabric и ее использование для приема, обработки и запроса данных.</li>
+            </ul>
+
+            <h3 style="color: #8E44AD; font-size: 18px; margin-top: 25px;">Следующие шаги</h3>
+            <p style="color: #555;">Теперь, когда вы узнали о крупномасштабном хранилище данных, рассмотрите возможность узнать больше о рабочих нагрузках, связанных с данными в Azure, выполнив сертификацию Майкрософт в основах данных Azure.</p>
+            
+            <div style="background: #F4ECF7; border-left: 4px solid #8E44AD; padding: 15px; margin-top: 20px;">
+                <strong>Начало работы с Azure:</strong><br>
+                Выберите подходящую вам учетную запись Azure. Используйте оплату по мере использования или попробуйте Azure бесплатно в течение 30 дней. (Регистрация)
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>

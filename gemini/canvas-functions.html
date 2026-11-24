@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Архитектурный конспект: Функции Azure (Azure Functions)</title>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+    <script>mermaid.initialize({startOnLoad:true, theme: 'default'});</script>
+    <style>
+        /* Базовые стили: Светлая тема, черный текст, Times New Roman 14px */
+        body {
+            font-family: 'Times New Roman', Times, serif;
+            font-size: 14px;
+            color: #000000;
+            background-color: #FAFAFA;
+            line-height: 1.6;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        /* Заголовки */
+        h1, h2, h3, h4 {
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            color: #2C3E50;
+            margin-top: 1.5em;
+            margin-bottom: 0.5em;
+        }
+        h1 { 
+            font-size: 30px; 
+            text-transform: uppercase; 
+            border-bottom: 3px solid #3498DB; 
+            padding-bottom: 12px; 
+            color: #2980B9; 
+            text-align: center;
+        }
+        h2 { 
+            font-size: 24px; 
+            color: #27AE60; 
+            border-left: 5px solid #2ECC71; 
+            padding-left: 15px; 
+            background-color: #EAFAF1;
+            padding: 10px 15px;
+            margin-top: 50px;
+        }
+        h3 { 
+            font-size: 18px; 
+            color: #8E44AD; 
+            font-style: italic; 
+            font-weight: bold;
+        }
+        h4 {
+            font-size: 16px;
+            color: #2C3E50;
+            font-weight: bold;
+        }
+
+        /* Выделение кода */
+        code { 
+            font-family: 'Courier New', Courier, monospace; 
+            background-color: #EAECEE; 
+            padding: 3px 6px; 
+            border-radius: 4px; 
+            color: #C0392B; 
+            font-weight: bold; 
+            font-size: 13px;
+        }
+        pre {
+            background-color: #F4F6F7;
+            border-left: 4px solid #3498DB;
+            padding: 15px;
+            overflow-x: auto;
+            border-radius: 0 6px 6px 0;
+        }
+        pre code {
+            background-color: transparent;
+            padding: 0;
+            color: #2C3E50;
+            font-weight: normal;
+        }
+
+        /* Блоки контента */
+        .tldr-box { 
+            background-color: #EBF5FB; 
+            border: 1px solid #AED6F1; 
+            padding: 20px; 
+            border-radius: 8px; 
+            margin-bottom: 25px; 
+            font-size: 15px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+        .analogy-box { 
+            background-color: #FEF9E7; 
+            border-left: 5px solid #F1C40F; 
+            padding: 20px; 
+            margin-bottom: 25px; 
+            border-radius: 0 8px 8px 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        .deep-dive { 
+            background-color: #F8F9F9; 
+            border: 1px solid #D5DBDB; 
+            padding: 20px; 
+            border-radius: 8px; 
+            margin: 25px 0; 
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+        .best-practice { 
+            background-color: #E8F8F5; 
+            border-left: 5px solid #1ABC9C; 
+            padding: 20px; 
+            margin: 20px 0; 
+            border-radius: 0 8px 8px 0;
+        }
+        .warning-box {
+            background-color: #FDEDEC;
+            border-left: 5px solid #E74C3C;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 0 8px 8px 0;
+        }
+
+        /* Таблицы */
+        table { 
+            width: 100%; 
+            border-collapse: collapse; 
+            margin: 25px 0; 
+            font-family: 'Segoe UI', sans-serif; 
+            font-size: 13.5px; 
+            background-color: #FFFFFF;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        th, td { 
+            border: 1px solid #BDC3C7; 
+            padding: 12px 15px; 
+            text-align: left; 
+        }
+        th { 
+            background-color: #34495E; 
+            color: #FFFFFF; 
+            font-weight: 600;
+        }
+        tr:nth-child(even) { background-color: #F8F9F9; }
+        tr:hover { background-color: #EBF5FB; }
+        .center-cell { text-align: center; font-weight: bold; }
+        .check { color: #27AE60; }
+        .cross { color: #E74C3C; }
+
+        /* Контейнеры для графики */
+        .visual-container { 
+            text-align: center; 
+            background: #FFFFFF; 
+            padding: 25px; 
+            border: 1px solid #EAEDED; 
+            border-radius: 12px; 
+            margin: 30px 0; 
+            box-shadow: 0 6px 12px rgba(0,0,0,0.08); 
+        }
+        .caption {
+            font-family: 'Arial', sans-serif;
+            font-size: 13px;
+            color: #7F8C8D;
+            margin-top: 15px;
+            font-style: italic;
+        }
+        
+        /* Сетка */
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin: 20px 0;
+        }
+        @media (max-width: 768px) {
+            .grid-2 { grid-template-columns: 1fr; }
+        }
+
+        /* Итоговый блок */
+        .summary-box {
+            background: linear-gradient(135deg, #F0F3F4 0%, #E5E8E8 100%);
+            border: 1px solid #CCD1D1;
+            padding: 30px;
+            border-radius: 12px;
+            text-align: center;
+            margin-top: 50px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+        }
+        .xp-badge {
+            display: inline-block;
+            background-color: #3498DB;
+            color: #FFFFFF;
+            font-weight: bold;
+            font-family: 'Segoe UI', sans-serif;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 16px;
+            margin: 15px 0;
+            box-shadow: 0 2px 5px rgba(52, 152, 219, 0.4);
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Архитектурный конспект: Функции Azure (Azure Functions)</h1>
+
+    <div class="tldr-box">
+        <p><strong>TL;DR:</strong> <strong>Функции Azure (Azure Functions)</strong> — это флагманское бессерверное (Serverless) решение класса FaaS (Function as a Service). Оно позволяет запускать изолированные фрагменты кода в ответ на облачные события (HTTP-запросы, таймеры, очереди, изменения в БД) без необходимости администрировать серверы. Вы фокусируетесь исключительно на бизнес-логике, а платформа берет на себя масштабирование, отказоустойчивость и оплату строго за фактическое время выполнения.</p>
+    </div>
+
+    <div class="analogy-box">
+        <strong>Аналогия из жизни (Вендинговый аппарат):</strong><br>
+        <p>Обычный сервер (IaaS/PaaS) — это как нанять продавца в киоск и платить ему зарплату 24/7, даже если ночью нет покупателей.<br>
+        <strong>Azure Functions</strong> — это вендинговый аппарат. Он потребляет ресурсы (и ваши деньги) только в тот момент, когда кто-то нажимает кнопку (<em>Триггер</em>), механизм выдает товар (<em>Ваш код</em>) и снова переходит в спящий режим. Если наплыв покупателей резко вырос — платформа мгновенно «клонирует» десятки таких аппаратов рядом.</p>
+    </div>
+
+    <!-- БЛОК 1: СЦЕНАРИИ И ЖИЗНЕННЫЙ ЦИКЛ -->
+    <h2>Модуль 1. Сценарии применения и Жизненный цикл разработки</h2>
+
+    <p>Функции Azure выступают идеальным «клеем» для событийно-ориентированных архитектур (Event-Driven Architecture). Основные промышленные сценарии:</p>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Бизнес-задача</th>
+                <th>Архитектурная реализация в Azure Functions</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><strong>Обработка загрузки файлов</strong></td>
+                <td>Запуск кода при появлении или изменении файла в Azure Blob Storage (генерация миниатюр, парсинг CSV/PDF, сканирование на вирусы).</td>
+            </tr>
+            <tr>
+                <td><strong>Потоковая обработка (Real-Time)</strong></td>
+                <td>Перехват и трансформация телеметрии из Azure Event Hubs / IoT Hub на пути к аналитическому хранилищу.</td>
+            </tr>
+            <tr>
+                <td><strong>Приложения с поддержкой ИИ</strong></td>
+                <td>Предоставление данных и API для ИИ-клиентов (включая триггеры <strong>Model Context Protocol — MCP</strong>) и интеграция рассуждений ИИ в событийные цепочки.</td>
+            </tr>
+            <tr>
+                <td><strong>Запланированные задачи (CRON)</strong></td>
+                <td>Выполнение очистки баз данных, генерации отчетов и проверок здоровья систем по строгому расписанию (<code>TimerTrigger</code>).</td>
+            </tr>
+            <tr>
+                <td><strong>Масштабируемые Web API</strong></td>
+                <td>Построение легковесных REST-конечных точек для SPA/мобильных приложений на базе <code>HttpTrigger</code>.</td>
+            </tr>
+            <tr>
+                <td><strong>Бессерверные рабочие процессы</strong></td>
+                <td>Оркестрация сложных многошаговых процессов с сохранением состояния через <strong>Durable Functions</strong>.</td>
+            </tr>
+            <tr>
+                <td><strong>Реакция на изменения в БД</strong></td>
+                <td>Запуск бизнес-логики при вставке или обновлении документа (Cosmos DB Change Feed, Azure SQL Trigger).</td>
+            </tr>
+            <tr>
+                <td><strong>Надежный обмен сообщениями</strong></td>
+                <td>Асинхронная обработка очередей из Azure Queue Storage, Service Bus, Kafka и RabbitMQ.</td>
+            </tr>
+            <tr>
+                <td><strong>Интеграция с SaaS-сервисами</strong></td>
+                <td>Использование <em>Управляемых соединителей (Managed Connectors)</em> для реакции на события в Microsoft 365, Teams и SharePoint.</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h3>Жизненный цикл разработки (End-to-End DevOps)</h3>
+    <div class="visual-container">
+        <div class="mermaid">
+            flowchart LR
+                A[1. Код\nC#, Python, TS,\nJava, Go, Rust] --> B[2. Локальная отладка\nVS Code / Visual Studio\nCore Tools + Azurite]
+                B --> C[3. Развертывание\nCI/CD GitHub Actions\nAzure CLI / azd]
+                C --> D[4. Мониторинг\nAzure Monitor &\nApplication Insights]
+                D -.->|Метрики и логи| A
+
+                style A fill:#EBF5FB,stroke:#3498DB,stroke-width:2px
+                style B fill:#EAFAF1,stroke:#27AE60,stroke-width:2px
+                style C fill:#FEF9E7,stroke:#F39C12,stroke-width:2px
+                style D fill:#F4ECF7,stroke:#8E44AD,stroke-width:2px
+        </div>
+        <div class="caption">Рис 1. Полный жизненный цикл функции: от локальной разработки с Azure Functions Core Tools до продакшн-телеметрии в Application Insights.</div>
+    </div>
+
+    <!-- БЛОК 2: АРХИТЕКТУРА (ТРИГГЕРЫ И ПРИВЯЗКИ) -->
+    <h2>Модуль 2. Механика Триггеров, Привязок (Bindings) и SDK-типов</h2>
+
+    <div class="tldr-box" style="background-color: #FDFEFE; border-color: #D5DBDB;">
+        <p><strong>Декларативная интеграция:</strong> Главная особенность Azure Functions — вы избавляетесь от шаблонного кода (boilerplate) для создания подключений, чтения строк соединения и сериализации. Платформа сама подключается к внешним сервисам и передает готовые данные прямо в аргументы вашего метода.</p>
+    </div>
+
+    <div class="visual-container">
+        <div class="mermaid">
+            graph LR
+                A[ТРИГГЕР\nРовно один!] -->|Инициирует и\nпередает payload| B((Функция\nAzure))
+                
+                C[Входная привязка\nInput Binding 0..N] -.->|Декларативно читает\nдоп. данные| B
+                
+                B -->|Возвращает\nрезультат| D[Выходная привязка\nOutput Binding 0..N]
+                
+                style A fill:#F1C40F,stroke:#F39C12,stroke-width:2px
+                style B fill:#3498DB,stroke:#2980B9,stroke-width:4px,color:#fff
+                style C fill:#D5F5E3,stroke:#27AE60,stroke-width:2px
+                style D fill:#E8DAEF,stroke:#8E44AD,stroke-width:2px
+        </div>
+        <div class="caption">Рис 2. Поток данных через функцию. Триггер — это особый вид входной привязки, запускающий выполнение.</div>
+    </div>
+
+    <div class="deep-dive">
+        <h3>Пример декларативной привязки (C# Isolated Worker Model)</h3>
+        <p>Функция срабатывает по HTTP-запросу и одновременно возвращает HTTP-ответ клиенту и записывает массив сообщений в очередь Azure Queue Storage через класс <code>MultiResponse</code>:</p>
+<pre><code>[Function("HttpExample")]
+public MultiResponse Run(
+    [HttpTrigger(AuthorizationLevel.Function, "get", "post")] HttpRequest req)
+{
+    return new MultiResponse
+    {
+        Messages = new[] { "Заказ #1042 принят в обработку" },
+        HttpResponse = new OkObjectResult("Запрос успешно поставлен в очередь!")
+    };
+}
+
+public class MultiResponse
+{
+    [QueueOutput("outqueue", Connection = "AzureWebJobsStorage")]
+    public string[] Messages { get; set; }
+
+    [HttpResult]
+    public IActionResult HttpResponse { get; set; }
+}</code></pre>
+        <p><em>Правило именования:</em> Имена триггеров и привязок могут содержать только буквенно-цифровые символы и знак подчеркивания <code>_</code>. Все расширения привязок (кроме встроенных <code>HTTP</code> и <code>Timer</code>) должны быть явно зарегистрированы в проекте (через Extension Bundles или NuGet-пакеты).</p>
+    </div>
+
+    <h3>Матрица поддерживаемых привязок</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>Служба / Протокол</th>
+                <th class="center-cell">Триггер</th>
+                <th class="center-cell">Вход (Input)</th>
+                <th class="center-cell">Выход (Output)</th>
+                <th>Архитектурные примечания</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><strong>Azure Blob Storage</strong></td>
+                <td class="center-cell check">✔</td>
+                <td class="center-cell check">✔</td>
+                <td class="center-cell check">✔</td>
+                <td>Для быстрого отклика используйте Event Grid-триггер поверх Blob вместо опроса контейнера.</td>
+            </tr>
+            <tr>
+                <td><strong>Azure Cosmos DB</strong></td>
+                <td class="center-cell check">✔</td>
+                <td class="center-cell check">✔</td>
+                <td class="center-cell check">✔</td>
+                <td>Триггер работает на базе Change Feed (возвращает JSON-элементы).</td>
+            </tr>
+            <tr>
+                <td><strong>Azure SQL</strong></td>
+                <td class="center-cell check">✔</td>
+                <td class="center-cell check">✔</td>
+                <td class="center-cell check">✔</td>
+                <td>Использует встроенный механизм Change Tracking в SQL Server / Azure SQL.</td>
+            </tr>
+            <tr>
+                <td><strong>Azure Service Bus / Event Hubs</strong></td>
+                <td class="center-cell check">✔</td>
+                <td class="center-cell cross">—</td>
+                <td class="center-cell check">✔</td>
+                <td>Очереди и топики корпоративного уровня (Service Bus) или потоки телеметрии (Event Hubs).</td>
+            </tr>
+            <tr>
+                <td><strong>HTTP и Вебхуки</strong></td>
+                <td class="center-cell check">✔</td>
+                <td class="center-cell cross">—</td>
+                <td class="center-cell check">✔</td>
+                <td>Не требует регистрации расширений. Основа для Serverless API.</td>
+            </tr>
+            <tr>
+                <td><strong>Timer (CRON)</strong></td>
+                <td class="center-cell check">✔</td>
+                <td class="center-cell cross">—</td>
+                <td class="center-cell cross">—</td>
+                <td>Не требует регистрации расширений. Запускается по выражению NCRONTAB.</td>
+            </tr>
+            <tr>
+                <td><strong>Azure Queue / Table Storage</strong></td>
+                <td class="center-cell check">✔ (Queue)</td>
+                <td class="center-cell check">✔ (Table)</td>
+                <td class="center-cell check">✔</td>
+                <td>Простые очереди (до 64 КБ) и NoSQL-таблицы в Storage Account.</td>
+            </tr>
+            <tr>
+                <td><strong>Event Grid / SignalR / Redis</strong></td>
+                <td class="center-cell check">✔</td>
+                <td class="center-cell check">✔ (SignalR/Redis)</td>
+                <td class="center-cell check">✔</td>
+                <td>Реактивная маршрутизация событий, WebSockets (SignalR) и кэш.</td>
+            </tr>
+            <tr>
+                <td><strong>Apache Kafka / RabbitMQ</strong></td>
+                <td class="center-cell check">✔</td>
+                <td class="center-cell cross">—</td>
+                <td class="center-cell check">✔</td>
+                <td><strong>Важно:</strong> Триггеры не поддерживаются в классическом плане Consumption (требуется Flex/Premium/Dedicated).</td>
+            </tr>
+            <tr>
+                <td><strong>Model Context Protocol (MCP)</strong></td>
+                <td class="center-cell check">✔</td>
+                <td class="center-cell cross">—</td>
+                <td class="center-cell cross">—</td>
+                <td>Триггеры инструментов, ресурсов и промптов для подключения функций напрямую к ИИ-агентам.</td>
+            </tr>
+            <tr>
+                <td><strong>Managed Connectors / SendGrid / Twilio</strong></td>
+                <td class="center-cell check">✔ (Conn.)</td>
+                <td class="center-cell cross">—</td>
+                <td class="center-cell check">✔ (Mail/SMS)</td>
+                <td>Managed Connectors управляют вебхуками, OAuth и ретраями для Microsoft 365, Teams и SharePoint.</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <div class="deep-dive" style="border-left: 5px solid #8E44AD;">
+        <h3 style="color: #8E44AD; margin-top: 0;">Работа с типами пакетов SDK в привязках (SDK-Type Bindings)</h3>
+        <p>Вместо примитивных строк или массивов байтов многие привязки поддерживают прямую инъекцию типизированных клиентов Azure SDK (уровень GA). Это дает строгую типизацию и доступ ко всем возможностям сервиса:</p>
+        <ul>
+            <li><strong>Blob Storage (Trigger / Input):</strong> <code>BlobClient</code>, <code>BlobContainerClient</code>, <code>BlockBlobClient</code>, <code>PageBlobClient</code>, <code>AppendBlobClient</code>.</li>
+            <li><strong>Cosmos DB (Input):</strong> <code>CosmosClient</code>, <code>Database</code>, <code>Container</code>.</li>
+            <li><strong>Service Bus (Trigger):</strong> <code>ServiceBusClient</code>, <code>ServiceBusReceiver</code>, <code>ServiceBusSender</code>, <code>ServiceBusMessage</code>.</li>
+            <li><strong>Event Grid / Event Hubs / Queues / Tables:</strong> <code>CloudEvent</code>, <code>EventData</code>, <code>QueueClient</code>, <code>TableClient</code>, <code>TableEntity</code>.</li>
+        </ul>
+        <p><strong>Три золотых правила работы с SDK-типами:</strong></p>
+        <ol>
+            <li>Если вы используете <em>выражения привязки</em> (например, <code>{name}</code> из триггера для пути во входной привязке), вы <strong>не можете</strong> использовать SDK-тип в самом триггере.</li>
+            <li>Для сложных сценариев вывода (Output) рекомендуется создавать клиент SDK напрямую через Dependency Injection, а не использовать выходную привязку.</li>
+            <li>Триггер <strong>Cosmos DB</strong> не поддерживает SDK-типы, так как канал изменений (Change Feed) всегда передает сериализованный JSON.</li>
+        </ol>
+    </div>
+
+    <!-- БЛОК 3: DURABLE FUNCTIONS -->
+    <h2>Модуль 3. Устойчивые функции (Durable Functions)</h2>
+
+    <div class="tldr-box">
+        <p><strong>TL;DR:</strong> Обычные функции Azure не хранят состояние (stateless) и имеют ограничения по времени выполнения. <strong>Durable Functions</strong> — это расширение, позволяющее писать <em>функции-оркестраторы с сохранением состояния (stateful)</em> прямо в коде. Платформа сама сохраняет контрольные точки (checkpoints) в хранилище, «усыпляет» оркестратор во время ожидания и пробуждает его при получении результата — вы не платите за время простоя!</p>
+    </div>
+
+    <div class="visual-container">
+        <div class="mermaid">
+            flowchart LR
+                subgraph Chaining [1. Цепочка функций]
+                    F1[F1] --> F2[F2] --> F3[F3]
+                end
+
+                subgraph FanOut [2. Fan-out / Fan-in]
+                    Start[Orchestrator] --> W1[Worker 1]
+                    Start --> W2[Worker 2]
+                    Start --> W3[Worker 3]
+                    W1 --> Agg[Агрегация]
+                    W2 --> Agg
+                    W3 --> Agg
+                end
+
+                style Start fill:#3498DB,color:#fff
+                style Agg fill:#27AE60,color:#fff
+        </div>
+        <div class="caption">Рис 3. Популярные шаблоны Durable Functions: последовательная цепочка (Chaining) и массовое распараллеливание с последующей сборкой результатов (Fan-out/Fan-in).</div>
+    </div>
+
+    <!-- БЛОК 4: ПЛАНЫ ХОСТИНГА -->
+    <h2>Модуль 4. Варианты хостинга (Hosting Plans)</h2>
+
+    <p>Выбор плана хостинга определяет модель биллинга, наличие проблемы «холодного старта» (Cold Start), сетевую изоляцию (VNet) и максимальное время выполнения функции.</p>
+
+    <table>
+        <thead>
+            <tr>
+                <th>План хостинга</th>
+                <th>Масштабирование и Оплата</th>
+                <th>Ключевые особенности и Сценарии (Use Case)</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><strong>Flex Consumption<br><span style="color:#27AE60;">(Рекомендуемый стандарт)</span></strong></td>
+                <td>Сверхбыстрое событийное масштабирование (до 0). Оплата строго по мере использования (Pay-as-you-go).</td>
+                <td>Поддержка <strong>интеграции с VNet</strong>, выбор размера памяти экземпляра, опциональные «всегда готовые» экземпляры для устранения холодного старта. <em>Примечание: редактирование кода на портале Azure не поддерживается (только локальная разработка/CI-CD).</em></td>
+            </tr>
+            <tr>
+                <td><strong>План «Премиум» (Elastic Premium)</strong></td>
+                <td>Событийное масштабирование с предварительно прогретыми экземплярами. Оплата за выделенные ядра/RAM.</td>
+                <td><strong>Нулевой холодный старт</strong>, неограниченная длительность выполнения (по умолчанию 30 мин, настраивается), полная поддержка VNet и пользовательских образов Linux. Идеально для критичных к задержкам API.</td>
+            </tr>
+            <tr>
+                <td><strong>Выделенный план (Dedicated / App Service Plan)</strong></td>
+                <td>Ручное или авто-масштабирование по метрикам (CPU/RAM). Фиксированная ежемесячная стоимость.</td>
+                <td>Запуск функций на уже оплаченных серверах вместе с веб-сайтами. Прогнозируемый бюджет. Обязательно включите опцию <code>Always On</code>.</td>
+            </tr>
+            <tr>
+                <td><strong>Azure Container Apps (ACA)</strong></td>
+                <td>Событийное масштабирование на базе Kubernetes (KEDA), включая масштаб до 0.</td>
+                <td>Развертывание контейнеризированных функций бок о бок с другими микросервисами, Dapr и пользовательскими библиотеками в единой среде.</td>
+            </tr>
+            <tr>
+                <td><strong>План потребления (Classic Consumption)</strong></td>
+                <td>Устаревающий бессерверный план.</td>
+                <td><strong>Внимание:</strong> Поддержка Linux Consumption прекращается <strong>30 сентября 2028 г.</strong> (новые версии .NET выше .NET 9 туда не добавляются). Windows-версия пока активна, но для всех новых проектов используйте <strong>Flex Consumption</strong>.</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <!-- БЛОК 5: ПОДДЕРЖИВАЕМЫЕ ЯЗЫКИ, ОС И МОДЕЛИ ПРОЦЕССОВ -->
+    <h2>Модуль 5. Языки программирования, ОС и Модели процессов</h2>
+
+    <div class="warning-box">
+        <h3 style="color: #C0392B; margin-top: 0;">Критическая дорожная карта поддержки (Lifecycle & Deprecation)</h3>
+        <ul>
+            <li><strong>C# In-Process Model (Модель в процессе):</strong> Поддержка завершилась <strong>10 ноября 2026 года</strong> (поддерживала максимум .NET 8 LTS). Все корпоративные приложения должны работать на <strong>Изолированной рабочей модели (Isolated Worker Model)</strong>, которая поддерживает <strong>.NET 8, .NET 9</strong> и актуальный <strong>.NET 10 (GA до 14 ноября 2028 г.)</strong>.</li>
+            <li><strong>Среда выполнения v3 на Linux Consumption:</strong> Перестала функционировать после <strong>30 сентября 2026 г.</strong> Необходима миграция на runtime <strong>v4.x</strong>.</li>
+            <li><strong>Linux Classic Consumption:</strong> Полный вывод из эксплуатации запланирован на <strong>30 сентября 2028 г.</strong> (целевой план миграции — <em>Flex Consumption</em>).</li>
+            <li><strong>Обновление управляемых образов Linux:</strong> Для существующих приложений Python 3.11 и Java 8/11/17 на планах Elastic Premium / Dedicated рекомендуется переходить с устаревающего образа Debian Bullseye (<code>|2.0</code>) на <strong>Debian Bookworm</strong> (<code>Python|3.11|3.0</code>) и <strong>Ubuntu Noble</strong> (<code>Java|17|4.0</code>).</li>
+        </ul>
+    </div>
+
+    <h3>Матрица совместимости языков и ОС (Runtime v4.x)</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>Язык</th>
+                <th>Стек (<code>--worker-runtime</code>)</th>
+                <th class="center-cell">Linux</th>
+                <th class="center-cell">Windows</th>
+                <th class="center-cell">Редактор на портале</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><strong>C# (Isolated Worker)</strong></td>
+                <td><code>dotnet-isolated</code></td>
+                <td class="center-cell check">✔</td>
+                <td class="center-cell check">✔</td>
+                <td class="center-cell cross">✖</td>
+            </tr>
+            <tr>
+                <td><strong>JavaScript / TypeScript</strong></td>
+                <td><code>node</code></td>
+                <td class="center-cell check">✔</td>
+                <td class="center-cell check">✔</td>
+                <td class="center-cell check">✔ (только JS)</td>
+            </tr>
+            <tr>
+                <td><strong>Python</strong></td>
+                <td><code>python</code></td>
+                <td class="center-cell check">✔</td>
+                <td class="center-cell cross">✖</td>
+                <td class="center-cell">Только Classic Consumption</td>
+            </tr>
+            <tr>
+                <td><strong>Java</strong></td>
+                <td><code>java</code></td>
+                <td class="center-cell check">✔</td>
+                <td class="center-cell check">✔</td>
+                <td class="center-cell cross">✖</td>
+            </tr>
+            <tr>
+                <td><strong>PowerShell</strong></td>
+                <td><code>powershell</code></td>
+                <td class="center-cell check">✔</td>
+                <td class="center-cell check">✔</td>
+                <td class="center-cell check">✔</td>
+            </tr>
+            <tr>
+                <td><strong>Go / Rust / PHP / Другие</strong></td>
+                <td><code>go</code> / Custom Handlers</td>
+                <td class="center-cell check">✔</td>
+                <td class="center-cell check">✔</td>
+                <td class="center-cell cross">✖</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <div class="grid-2">
+        <div class="deep-dive" style="margin: 0;">
+            <h3 style="margin-top: 0;">Isolated Worker Model (C#)</h3>
+            <p>Ваше приложение-функция запускается как самостоятельный процесс .NET и общается с хостом Azure Functions по высокоскоростному каналу <strong>gRPC</strong>. Это полностью устраняет конфликты версий NuGet-пакетов с хостом, дает полноценный <code>Program.cs</code>, стандартное внедрение зависимостей (DI) и конвейер Middleware.</p>
+        </div>
+        <div class="deep-dive" style="margin: 0;">
+            <h3 style="margin-top: 0;">Пользовательские обработчики (Custom Handlers)</h3>
+            <p>Если ваш язык официально не поддерживается (например, <strong>Rust</strong> или специфическая версия <strong>Go</strong>), вы пишете легковесный HTTP-сервер. Хост Azure Functions принимает все облачные триггеры (Queue, Blob, Timer), пересылает их вашему локальному HTTP-серверу, а ответ преобразует в выходные привязки.</p>
+        </div>
+    </div>
+
+    <!-- БЛОК 6: BEST PRACTICES -->
+    <h2>Модуль 6. Архитектурные Best Practices и Anti-patterns</h2>
+
+    <div class="best-practice">
+        <strong>✔ Правильно (Best Practices):</strong>
+        <ul style="margin-top: 8px;">
+            <li><strong>Пишите идемпотентные функции:</strong> В распределенных системах сообщения из очередей могут доставляться повторно (At-least-once). Повторный запуск функции с тем же ID заказа не должен приводить к двойному списанию денег.</li>
+            <li><strong>Переиспользуйте клиенты подключений (Static / Singleton):</strong> Регистрируйте <code>HttpClient</code>, <code>CosmosClient</code> и <code>ServiceBusClient</code> как Singleton через DI. Создание нового клиента на каждый вызов функции быстро исчерпает лимит исходящих TCP-сокетов (SNAT Port Exhaustion).</li>
+            <li><strong>Не закрепляйте минорные версии языков:</strong> Azure автоматически обновляет патчи безопасности (например, Python 3.11.x) и удаляет устаревшие минорные сборки. Ориентируйтесь только на мажорную версию.</li>
+            <li><strong>Используйте Managed Identity вместо строк подключения:</strong> Подключайтесь к Blob Storage, Key Vault и Service Bus через управляемое удостоверение Entra ID, чтобы не хранить секреты в настройках приложения.</li>
+        </ul>
+    </div>
+
+    <div class="warning-box">
+        <strong>✖ Неправильно (Anti-patterns):</strong>
+        <ul style="margin-top: 8px;">
+            <li><strong>Длительные синхронные задачи в HTTP-функциях:</strong> Не заставляйте HTTP-запрос ждать 5 минут. Вместо этого быстро примите запрос, положите задачу в очередь (или запустите <em>Durable Function</em>) и верните статус <code>202 Accepted</code>.</li>
+            <li><strong>Межфункциональные вызовы по HTTP:</strong> Избегайте прямого вызова одной функции из другой по HTTP — это создает жесткую связанность и двойную оплату за время ожидания. Используйте очереди (Service Bus / Storage Queues) или оркестратор Durable Functions.</li>
+            <li><strong>Хранение состояния в локальной памяти:</strong> Экземпляр функции может быть уничтожен платформой в любую секунду после завершения работы. Всегда сохраняйте состояние во внешнем хранилище.</li>
+        </ul>
+    </div>
+
+    <!-- ИТОГИ -->
+    <div class="summary-box">
+        <h2 style="border: none; background: none; color: #2C3E50; margin: 0; padding: 0;">Сводка и Итоги</h2>
+        <div class="xp-badge">Завершено | Получено XP: 350</div>
+        
+        <div style="text-align: left; background: #FFFFFF; padding: 25px; border-radius: 8px; margin-top: 20px;">
+            <p><strong>Azure Functions — это универсальный строительный блок современных облачных и ИИ-решений, позволяющий платить только за реальную бизнес-логику.</strong></p>
+            
+            <ul style="color: #333; line-height: 1.8;">
+                <li><strong>События и Привязки:</strong> Один триггер запускает код, а декларативные входные/выходные привязки (включая SDK-типы, Managed Connectors и MCP для ИИ) избавляют от рутинной интеграции.</li>
+                <li><strong>Оркестрация (Durable Functions):</strong> Позволяет строить надежные цепочки и параллельные вычисления (Fan-out/Fan-in) без оплаты времени простоя.</li>
+                <li><strong>Современный хостинг:</strong> <strong>Flex Consumption</strong> — целевой стандарт для новых бессерверных систем (быстрое масштабирование + VNet).</li>
+                <li><strong>Архитектура процессов:</strong> Используйте <strong>Isolated Worker Model</strong> для C# (.NET 8–10) и <strong>Custom Handlers</strong> для нестандартных языков вроде Rust.</li>
+            </ul>
+        </div>
+    </div>
+
+</body>
+</html>

@@ -1,0 +1,989 @@
+ <!DOCTYPE html>
+		<html
+			class="layout layout-single    module show-breadcrumb default-focus"
+			lang="en-us"
+			dir="ltr"
+			data-authenticated="false"
+			data-auth-status-determined="false"
+			data-target="docs"
+			x-ms-format-detection="none"
+		>
+			
+		<head>
+			<title>Introduction to Azure Data Lake Storage Gen2 - Training | Microsoft Learn</title>
+			<meta charset="utf-8" />
+			<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+			<meta name="color-scheme" content="light dark" />
+
+			<meta name="description" content="Discover how Data Lake Storage provides a repository where you can upload and store unstructured data bringing new efficiencies to processing big data analytics." />
+			<link rel="canonical" href="https://learn.microsoft.com/en-us/training/modules/introduction-to-azure-data-lake-storage/" /> 
+
+			<!-- Non-customizable open graph and sharing-related metadata -->
+			<meta name="twitter:card" content="summary" />
+			<meta name="twitter:site" content="@MicrosoftLearn" />
+			<meta property="og:type" content="website" />
+			<meta property="og:image:alt" content="Introduction to Azure Data Lake Storage Gen2 - Training | Microsoft Learn" />
+			<meta property="og:image" content="https://learn.microsoft.com/training/achievements/data-ai/introduction-to-azure-data-lake-storage-badge-social.png" />
+			<!-- Page specific open graph and sharing-related metadata -->
+			<meta property="og:title" content="Introduction to Azure Data Lake Storage Gen2 - Training" />
+			<meta property="og:url" content="https://learn.microsoft.com/en-us/training/modules/introduction-to-azure-data-lake-storage/" />
+			<meta property="og:description" content="Discover how Data Lake Storage provides a repository where you can upload and store unstructured data bringing new efficiencies to processing big data analytics." />
+			<meta name="platform_id" content="a6618088-6da7-2dd8-b21f-b1897574e980" /> 
+			<meta name="locale" content="en-us" />
+			 
+			<meta name="uhfHeaderId" content="MSDocsHeader-Learn" />
+
+			<meta name="page_type" content="learn" />
+
+			<!--page specific meta tags-->
+			
+
+			<!-- custom meta tags -->
+			
+		<meta name="uid" content="learn.data-ai.introduction-to-azure-data-lake-storage" />
+	
+		<meta name="schema" content="Module" />
+	
+		<meta name="breadcrumb_path" content="/learn/breadcrumb/toc.json" />
+	
+		<meta name="feedback_system" content="Standard" />
+	
+		<meta name="clicktale" content="true" />
+	
+		<meta name="adobe-target" content="true" />
+	
+		<meta name="prefetch-feature-rollout" content="true" />
+	
+		<meta name="localization_scopes" content="de-de" />
+	
+		<meta name="localization_scopes" content="es-es" />
+	
+		<meta name="localization_scopes" content="fr-fr" />
+	
+		<meta name="localization_scopes" content="it-it" />
+	
+		<meta name="localization_scopes" content="ru-ru" />
+	
+		<meta name="localization_scopes" content="pt-br" />
+	
+		<meta name="localization_scopes" content="ja-jp" />
+	
+		<meta name="localization_scopes" content="ko-kr" />
+	
+		<meta name="localization_scopes" content="zh-cn" />
+	
+		<meta name="localization_scopes" content="zh-tw" />
+	
+		<meta name="localization_scopes" content="cs-cz" />
+	
+		<meta name="localization_scopes" content="hu-hu" />
+	
+		<meta name="localization_scopes" content="nl-nl" />
+	
+		<meta name="localization_scopes" content="pl-pl" />
+	
+		<meta name="localization_scopes" content="pt-pt" />
+	
+		<meta name="localization_scopes" content="tr-tr" />
+	
+		<meta name="localization_scopes" content="sv-se" />
+	
+		<meta name="gs-content.levels" content="200" />
+	
+		<meta name="gs-content.locale" content="en-us" />
+	
+		<meta name="gs-duration" content="30" />
+	
+		<meta name="gs-modality" content="module" />
+	
+		<meta name="gs-products" content="azure" />
+	
+		<meta name="gs-roles" content="data-engineer" />
+	
+		<meta name="gs-roles" content="storage-admin" />
+	
+		<meta name="gs-roles" content="solution-architect" />
+	
+		<meta name="gs-skills" content="Storage" />
+	
+		<meta name="gs-skills" content="Data Engineering" />
+	
+		<meta name="gs-skills" content="Data Warehousing" />
+	
+		<meta name="gs-skills" content="Data Management" />
+	
+		<meta name="gs-skills" content="Data Security" />
+	
+		<meta name="gs-skills" content="Data Analytics" />
+	
+		<meta name="gs-solution.area" content="Cloud &amp; AI Platforms" />
+	
+		<meta name="gs-source.content" content="https://github.com/MicrosoftDocs/learn-pr/blob/main/learn-pr/data-ai-cert/introduction-to-azure-data-lake-storage/index.yml" />
+	
+		<meta name="ms.date" content="2026-10-29T00:00:00Z" />
+	
+		<meta name="author" content="weslbo" />
+	
+		<meta name="ms.author" content="wedebols" />
+	
+		<meta name="ms.topic" content="module" />
+	
+		<meta name="ms.service" content="azure-data-lake-storage" />
+	
+		<meta name="document_id" content="5ac1266c-9fe4-d8b4-900e-0296d3d90602" />
+	
+		<meta name="document_version_independent_id" content="28c7e3b6-767e-89a1-223a-8f5b213af47a" />
+	
+		<meta name="updated_at" content="2026-10-29T17:27:00Z" />
+	
+		<meta name="original_content_git_url" content="https://github.com/MicrosoftDocs/learn-pr/blob/live/learn-pr/data-ai-cert/introduction-to-azure-data-lake-storage/index.yml" />
+	
+		<meta name="gitcommit" content="https://github.com/MicrosoftDocs/learn-pr/blob/da8184c04334205dc0c447f25dd53a9a19504c80/learn-pr/data-ai-cert/introduction-to-azure-data-lake-storage/index.yml" />
+	
+		<meta name="git_commit_id" content="da8184c04334205dc0c447f25dd53a9a19504c80" />
+	
+		<meta name="site_name" content="Docs" />
+	
+		<meta name="depot_name" content="Docs.learn-pr" />
+	
+		<meta name="page_kind" content="module" />
+	
+		<meta name="feedback_product_url" content="" />
+	
+		<meta name="feedback_help_link_type" content="" />
+	
+		<meta name="feedback_help_link_url" content="" />
+	
+		<meta name="asset_id" content="modules/introduction-to-azure-data-lake-storage/index" />
+	
+		<meta name="moniker_range_name" content="" />
+	
+		<meta name="item_type" content="Content" />
+	
+		<meta name="source_path" content="learn-pr/data-ai-cert/introduction-to-azure-data-lake-storage/index.yml" />
+	
+		<meta name="github_feedback_content_git_url" content="https://github.com/MicrosoftDocs/learn/blob/main/learn-pr/data-ai-cert/introduction-to-azure-data-lake-storage/index.yml" />
+	
+		<meta name="markdown_url" content="https://learn.microsoft.com/en-us/training/modules/introduction-to-azure-data-lake-storage/?accept=text/markdown" />
+	 
+		<meta name="cmProducts" content="https://authoring-docs-microsoft.poolparty.biz/devrel/5c1f3bfc-fced-4ad1-b4e6-b7200832734d" data-source="generated" />
+	
+		<meta name="spProducts" content="https://authoring-docs-microsoft.poolparty.biz/devrel/5017978e-5a12-4c31-bdfd-1880eb1a780b" data-source="generated" />
+	
+
+			<!-- Apply persisted/system theme before first paint to prevent wrong-theme flash when scripts are deferred. -->
+			<script id="theme-preference">
+				(function () {
+			try {
+				var stored = localStorage.getItem('theme');
+				var theme = /^(light|dark|high-contrast)$/.test(stored)
+					? stored
+					: matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+				document.documentElement.classList.add('theme-' + theme);
+			} catch (e) {}
+		})();;
+			</script>
+
+			<script id="atlas-layout-preferences">
+				(function () {
+			try {
+				var state = JSON.parse(localStorage.getItem('atlas-layout-preferences') || '{}');
+				var view = state["Module"] || {};
+				var excludesKey = "";
+				var blocked = {};
+				if (excludesKey) {
+					var exclusions = JSON.parse(localStorage.getItem('atlas-layout-exclusions') || '{}');
+					if (Object.prototype.hasOwnProperty.call(exclusions, excludesKey)) {
+						var scoped = exclusions[excludesKey];
+						if (scoped) {
+							if (typeof scoped === 'object') blocked = scoped;
+						}
+					}
+				}
+				var html = document.documentElement;
+				for (var c in view) {
+					if (Object.prototype.hasOwnProperty.call(blocked, c)) continue;
+					if (view[c]) html.classList.add(c);
+					else html.classList.remove(c);
+				}
+			} catch (e) {}
+		})();;
+			</script>
+
+			<!-- assets and js globals -->
+			
+			<link rel="stylesheet" href="/static/assets/0.4.03603.8379-b7d5d6ac/styles/site.css" />
+			
+			<script src="https://wcpstatic.microsoft.com/mscc/lib/v2/wcp-consent.js"></script>
+			<!-- Keep this URL in sync with oneDSScriptSelector in instrumentation/one-ds.ts. -->
+			<script async src="https://js.monitor.azure.com/scripts/c/ms.jsll-4.min.js"></script>
+			
+
+			<!-- msdocs global object -->
+			<script id="msdocs-script">
+		var msDocs = {
+  "environment": {
+    "accessLevel": "online",
+    "azurePortalHostname": "portal.azure.com",
+    "reviewFeatures": false,
+    "supportLevel": "production",
+    "systemContent": true,
+    "siteName": "learn",
+    "legacyHosting": false
+  },
+  "data": {
+    "contentLocale": "en-us",
+    "contentDir": "ltr",
+    "userLocale": "en-us",
+    "userDir": "ltr",
+    "pageTemplate": "Module",
+    "layoutStateStorageKey": "Module",
+    "brand": "",
+    "context": {},
+    "standardFeedback": false,
+    "showFeedbackReport": false,
+    "feedbackHelpLinkType": "",
+    "feedbackHelpLinkUrl": "",
+    "feedbackSystem": "Standard",
+    "feedbackGitHubRepo": "",
+    "feedbackProductUrl": "",
+    "extendBreadcrumb": false,
+    "isEditDisplayable": false,
+    "isPrivateUnauthorized": false,
+    "hideViewSource": false,
+    "isPermissioned": false,
+    "hasRecommendations": false
+  },
+  "functions": {}
+};;
+	</script>
+
+			<!-- base scripts, msdocs global should be before this -->
+			
+				<script
+					src="/static/assets/0.4.03603.8379-b7d5d6ac/scripts/en-us/index-learner-experience.js"
+					async
+				></script>
+			
+			
+
+			<!-- json-ld -->
+			
+		<script >bazadebezolkohpepadr="188430010"</script><script type="text/javascript" src="https://learn.microsoft.com/akam/13/b3b3529"  defer></script></head>
+	
+			<body
+				id="body"
+				data-bi-name="body"
+				class="layout-body "
+				lang="en-us"
+				dir="ltr"
+			>
+				<header class="layout-body-header background-color-body-medium">
+		<div class="header-holder has-default-focus">
+			
+		<a
+			href="#main"
+			
+			style="z-index: 1070"
+			class="outline-color-text visually-hidden-until-focused position-fixed inner-focus focus-visible top-0 left-0 right-0 padding-xs text-align-center background-color-body"
+			
+		>
+			Skip to main content
+		</a>
+	
+
+			<div hidden id="cookie-consent-holder" data-test-id="cookie-consent-container"></div>
+			<!-- Unsupported browser warning -->
+			<div
+				id="unsupported-browser"
+				style="background-color: white; color: black; padding: 16px; border-bottom: 1px solid grey;"
+				hidden
+			>
+				<div style="max-width: 800px; margin: 0 auto;">
+					<p style="font-size: 24px">This browser is no longer supported.</p>
+					<p style="font-size: 16px; margin-top: 16px;">
+						Upgrade to Microsoft Edge to take advantage of the latest features, security updates, and technical support.
+					</p>
+					<div style="margin-top: 12px;">
+						<a
+							href="https://go.microsoft.com/fwlink/p/?LinkID=2092881 "
+							style="background-color: #0078d4; border: 1px solid #0078d4; color: white; padding: 6px 12px; border-radius: 2px; display: inline-block;"
+						>
+							Download Microsoft Edge
+						</a>
+						<a
+							href="https://learn.microsoft.com/en-us/lifecycle/faq/internet-explorer-microsoft-edge"
+							style="background-color: white; padding: 6px 12px; border: 1px solid #505050; color: #171717; border-radius: 2px; display: inline-block;"
+						>
+							More info about Internet Explorer and Microsoft Edge
+						</a>
+					</div>
+				</div>
+			</div>
+			<!-- site header -->
+			<div
+				id="ms--site-header"
+				data-test-id="site-header-wrapper"
+				itemscope="itemscope"
+				itemtype="http://schema.org/Organization"
+			>
+				<div
+					id="ms--mobile-nav"
+					class="site-header display-none-tablet padding-inline-none gap-none"
+					data-bi-name="mobile-header"
+					data-test-id="mobile-header"
+				></div>
+				<div
+					id="ms--primary-nav"
+					class="site-header display-none display-flex-tablet"
+					data-bi-name="L1-header"
+					data-test-id="primary-header"
+				></div>
+				<div
+					id="ms--secondary-nav"
+					class="site-header display-none display-flex-tablet"
+					data-bi-name="L2-header"
+					data-test-id="secondary-header"
+					
+				></div>
+			</div>
+			
+		<!-- banner -->
+		<div data-banner>
+			<div id="disclaimer-holder"></div>
+			
+		</div>
+		<!-- banner end -->
+	
+		</div>
+	</header>
+				 
+
+				<main
+					id="main"
+					role="main"
+					class="layout-body-main background-color-body-medium"
+					data-bi-name="content"
+					lang="en-us"
+					dir="ltr"
+				>
+					
+			<div
+				data-main-column
+				class=""
+			>
+				<div class="">
+					
+		<div id="article-header" class="background-color-body display-none-print">
+			<div class="display-flex align-items-center justify-content-space-between uhf-container">
+				
+		<details
+			id="article-header-breadcrumbs-overflow-popover"
+			class="popover popover-left"
+			data-for="article-header-breadcrumbs"
+		>
+			<summary
+				class="button button-clear button-primary button-sm inner-focus"
+				aria-label="All breadcrumbs"
+			>
+				<span class="icon" aria-hidden="true">
+					<span class="docon docon-more"></span>
+				</span>
+			</summary>
+			<div id="article-header-breadcrumbs-overflow" class="popover-content"></div>
+		</details>
+
+		<bread-crumbs
+			id="article-header-breadcrumbs"
+			role="group"
+			aria-label="Breadcrumbs"
+			data-test-id="article-header-breadcrumbs"
+			class="overflow-hidden flex-grow-1 margin-right-sm margin-right-md-tablet margin-right-lg-desktop margin-left-negative-xxs padding-left-xxs"
+		></bread-crumbs>
+	 
+		<div
+			id="article-header-page-actions"
+			class="opacity-none margin-left-auto display-flex flex-wrap-no-wrap align-items-stretch"
+		>
+			 
+
+			<details class="popover popover-right" id="article-header-page-actions-overflow">
+				<summary
+					class="justify-content-flex-start button button-clear button-sm button-primary inner-focus"
+					aria-label="More actions"
+					aria-expanded="false"
+					title="More actions"
+				>
+					<span class="icon" aria-hidden="true">
+						<span class="docon docon-more-vertical"></span>
+					</span>
+				</summary>
+				<div class="popover-content">
+					  
+		<a
+			id="lang-link-overflow"
+			class="button-sm inner-focus button button-clear button-block justify-content-flex-start text-align-left"
+			data-bi-name="language-toggle"
+			data-page-action-item="overflow-all"
+			data-check-hidden="true"
+			data-read-in-link
+			href="#"
+			hidden
+		>
+			<span class="icon" aria-hidden="true" data-read-in-link-icon>
+				<span class="docon docon-locale-globe"></span>
+			</span>
+			<span data-read-in-link-text>Read in English</span>
+		</a>
+	
+					  
+					  
+				</div>
+			</details>
+		</div>
+	
+			</div>
+		</div>
+	 
+					<div data-page-content class=""><div class="modular-content-container" data-bi-name="module">
+	<div class="section is-small is-uniform padding-none padding-block-lg-tablet padding-inline-sm-tablet padding-sm-desktop position-relative">
+		<div class="box is-shadowless-mobile padding-none">
+			<div class="padding-sm padding-bottom-none padding-bottom-none-tablet padding-xs-tablet">
+				<div class="columns has-large-gaps margin-none">
+
+					<figure class="image is-112x112-desktop is-96x96 margin-bottom-sm">
+						<img role="presentation" src="/en-us/training/achievements/data-ai/introduction-to-azure-data-lake-storage-badge.svg" alt="" data-linktype="absolute-path">
+					</figure>
+
+					<div class="column is-auto padding-none padding-sm-tablet position-relative-tablet">
+						<div data-progress-uid="learn.data-ai.introduction-to-azure-data-lake-storage" class="xp-tag is-hidden position-absolute top-0 margin-top-xs margin-top-none-tablet has-content-right-zero margin-right-lg-tablet margin-right-sm">
+							<div class="xp-tag-hexagon">
+								<span aria-hidden="true" data-test-id="module-completed-xp-tag-icon" class="xp-tag-icon is-shown-complete docon docon-check"></span>
+								<span class="xp-tag-xp"></span>
+							</div>
+						</div>
+						<div class="columns is-mobile is-gapless margin-bottom-none">
+							<div class="column is-auto heading-container">
+								<h1 class="margin-none title is-2 has-content-margin-right-xxl-tablet margin-block-none">Introduction to Azure Data Lake Storage Gen2</h1>
+								<ul class="metadata page-metadata">
+									<li class="module-duration-minutes"></li>
+									<li>
+										Module
+									</li>
+									<li class="module-unit-count">
+										8 Units
+									</li>
+								</ul>
+								<div id="module-pass-tag-container" hidden=""></div>
+									<div class="page-rating margin-bottom-none"></div>
+								<div id="ms--module-user-feedback" data-test-id="module-user-feedback-container" class="display-none-chromeless">
+<div id="user-feedback" class="margin-block-xxs display-none-print" data-hide-on-archived="">
+	<button id="user-feedback-button" data-test-id="conceptual-feedback-button" class="button button-sm button-clear button-primary" type="button" data-bi-name="user-feedback-button" data-user-feedback-button="">
+		<span class="icon" aria-hidden="true">
+			<span class="docon docon-like"></span>
+		</span>
+		<span>Feedback</span>
+	</button>
+</div>
+								</div>
+							</div>
+						</div>
+
+						<div class="display-flex flex-wrap-wrap gap-xxs margin-block-xxs">
+								<div class="tag tag-filled tag-sm font-size-xs">
+									Intermediate
+								</div>
+								<div class="tag tag-filled tag-sm font-size-xs">
+									Data Engineer
+								</div>
+								<div class="tag tag-filled tag-sm font-size-xs">
+									Azure
+								</div>
+								<div class="tag tag-filled tag-sm font-size-xs">
+									Azure Data Lake
+								</div>
+						</div>
+
+						<div class="learn-summary content font-size-md margin-top-xxs"><p>Data lakes are a core element of data analytics architectures. Azure Data Lake Storage Gen2 provides a scalable, secure, cloud-based solution for data lake storage.</p>
+</div>
+
+							<h2 class="title is-6 margin-bottom-none margin-top-xs">
+								Learning objectives
+							</h2>
+							<div class="abstract content font-size-sm margin-block-xs">
+								<p>In this module, you learn how to:</p>
+<ul>
+<li>Describe the key features and benefits of Azure Data Lake Storage Gen2</li>
+<li>Enable Azure Data Lake Storage Gen2 in an Azure Storage account</li>
+<li>Compare Azure Data Lake Storage Gen2 and Azure Blob storage</li>
+<li>Describe where Azure Data Lake Storage Gen2 fits in the stages of analytical processing</li>
+<li>Describe how Azure data Lake Storage Gen2 is used in common analytical workloads</li>
+</ul>
+
+							</div>
+
+						<div id="module-actions" class="buttons">
+							<button type="button" class="collection button button-clear inner-focus margin-right-none display-none-chromeless" data-bi-name="collection" data-list-item-title="Introduction to Azure Data Lake Storage Gen2" data-resource-type="module" data-test-id="module-add-to-collection" data-list-type="collection">
+								<span class="icon has-text-primary" aria-hidden="true">
+									<span class="docon docon-circle-addition"></span>
+								</span>
+								<span class="add-to-collection-status">
+									Add
+								</span>
+							</button>
+						</div>
+
+							<div class="prerequisites content">
+								<h2 class="title is-6 margin-bottom-none margin-top-xs">Prerequisites</h2>
+								<p>Before starting this module, you should have completed the <a href="/en-us/certifications/azure-data-fundamentals/" data-linktype="absolute-path">Microsoft Azure Data Fundamentals certification</a> or have equivalent knowledge and experience.</p>
+
+							</div>
+
+<div class="font-size-sm content margin-bottom-xs">
+	<h2 class="title is-6 margin-top-xxs margin-bottom-none">Get started with Azure</h2>
+	<p class="margin-top-none">Choose the Azure account that's right for you. Pay as you go or try Azure free for up to 30 days. <a href="https://azure.microsoft.com/pricing/purchase-options/azure-account?cid=msft_learn" data-linktype="external">Sign up.</a></p>
+</div>
+
+						<div id="parent-learning-paths"></div>
+
+						<ul id="unit-list" class="margin-top-sm module-unit-list-mobile" data-bi-name="units">
+								<li class="module-unit font-size-md position-relative padding-block-xs padding-block-xxs-tablet border-top border-top-none-tablet completable is-unstyled" data-unit-uid="learn.data-ai-introduction-to-azure-data-lake-storage.introduction" data-progress-uid="learn.data-ai-introduction-to-azure-data-lake-storage.introduction">
+									<div class="barLink is-unit-list-item margin-none has-content-margin-left-sm has-content-margin-left-none-tablet columns">
+										<div class="column is-11 is-11-mobile padding-none has-content-margin-right-xs">
+											<a class="unit-title display-block font-size-md has-line-height-reset" href="1-introduction" data-linktype="relative-path">Introduction</a>
+
+											<span class="unit-duration font-size-xs margin-top-xxs has-text-subtle">min</span>
+										</div>
+										<div class="column is-1 is-1-mobile padding-none">
+											<span class="has-text-success docon docon-check is-shown-complete"></span>
+											<span class="docon docon-chevron-right-light font-size-h5 is-hidden-tablet is-hidden-complete"></span>
+										</div>
+									</div>
+								</li>
+								<li class="module-unit font-size-md position-relative padding-block-xs padding-block-xxs-tablet border-top border-top-none-tablet completable is-unstyled" data-unit-uid="learn.data-ai-introduction-to-azure-data-lake-storage.azure-data-lake-gen2" data-progress-uid="learn.data-ai-introduction-to-azure-data-lake-storage.azure-data-lake-gen2">
+									<div class="barLink is-unit-list-item margin-none has-content-margin-left-sm has-content-margin-left-none-tablet columns">
+										<div class="column is-11 is-11-mobile padding-none has-content-margin-right-xs">
+											<a class="unit-title display-block font-size-md has-line-height-reset" href="2-azure-data-lake-gen2" data-linktype="relative-path">Understand Azure Data Lake Storage Gen2</a>
+
+											<span class="unit-duration font-size-xs margin-top-xxs has-text-subtle">min</span>
+										</div>
+										<div class="column is-1 is-1-mobile padding-none">
+											<span class="has-text-success docon docon-check is-shown-complete"></span>
+											<span class="docon docon-chevron-right-light font-size-h5 is-hidden-tablet is-hidden-complete"></span>
+										</div>
+									</div>
+								</li>
+								<li class="module-unit font-size-md position-relative padding-block-xs padding-block-xxs-tablet border-top border-top-none-tablet completable is-unstyled" data-unit-uid="learn.data-ai-introduction-to-azure-data-lake-storage.create-data-lake-account" data-progress-uid="learn.data-ai-introduction-to-azure-data-lake-storage.create-data-lake-account">
+									<div class="barLink is-unit-list-item margin-none has-content-margin-left-sm has-content-margin-left-none-tablet columns">
+										<div class="column is-11 is-11-mobile padding-none has-content-margin-right-xs">
+											<a class="unit-title display-block font-size-md has-line-height-reset" href="3-create-data-lake-account" data-linktype="relative-path">Enable Azure Data Lake Storage Gen2 in Azure Storage</a>
+
+											<span class="unit-duration font-size-xs margin-top-xxs has-text-subtle">min</span>
+										</div>
+										<div class="column is-1 is-1-mobile padding-none">
+											<span class="has-text-success docon docon-check is-shown-complete"></span>
+											<span class="docon docon-chevron-right-light font-size-h5 is-hidden-tablet is-hidden-complete"></span>
+										</div>
+									</div>
+								</li>
+								<li class="module-unit font-size-md position-relative padding-block-xs padding-block-xxs-tablet border-top border-top-none-tablet completable is-unstyled" data-unit-uid="learn.data-ai-introduction-to-azure-data-lake-storage.azure-data-lake-and-blob-storage" data-progress-uid="learn.data-ai-introduction-to-azure-data-lake-storage.azure-data-lake-and-blob-storage">
+									<div class="barLink is-unit-list-item margin-none has-content-margin-left-sm has-content-margin-left-none-tablet columns">
+										<div class="column is-11 is-11-mobile padding-none has-content-margin-right-xs">
+											<a class="unit-title display-block font-size-md has-line-height-reset" href="4-azure-data-lake-and-blob-storage" data-linktype="relative-path">Compare Azure Data Lake Storage to Azure Blob storage</a>
+
+											<span class="unit-duration font-size-xs margin-top-xxs has-text-subtle">min</span>
+										</div>
+										<div class="column is-1 is-1-mobile padding-none">
+											<span class="has-text-success docon docon-check is-shown-complete"></span>
+											<span class="docon docon-chevron-right-light font-size-h5 is-hidden-tablet is-hidden-complete"></span>
+										</div>
+									</div>
+								</li>
+								<li class="module-unit font-size-md position-relative padding-block-xs padding-block-xxs-tablet border-top border-top-none-tablet completable is-unstyled" data-unit-uid="learn.data-ai-introduction-to-azure-data-lake-storage.stages-for-processing-big-data" data-progress-uid="learn.data-ai-introduction-to-azure-data-lake-storage.stages-for-processing-big-data">
+									<div class="barLink is-unit-list-item margin-none has-content-margin-left-sm has-content-margin-left-none-tablet columns">
+										<div class="column is-11 is-11-mobile padding-none has-content-margin-right-xs">
+											<a class="unit-title display-block font-size-md has-line-height-reset" href="5-stages-for-processing-big-data" data-linktype="relative-path">Understand the stages for processing big data</a>
+
+											<span class="unit-duration font-size-xs margin-top-xxs has-text-subtle">min</span>
+										</div>
+										<div class="column is-1 is-1-mobile padding-none">
+											<span class="has-text-success docon docon-check is-shown-complete"></span>
+											<span class="docon docon-chevron-right-light font-size-h5 is-hidden-tablet is-hidden-complete"></span>
+										</div>
+									</div>
+								</li>
+								<li class="module-unit font-size-md position-relative padding-block-xs padding-block-xxs-tablet border-top border-top-none-tablet completable is-unstyled" data-unit-uid="learn.data-ai-introduction-to-azure-data-lake-storage.use-cases" data-progress-uid="learn.data-ai-introduction-to-azure-data-lake-storage.use-cases">
+									<div class="barLink is-unit-list-item margin-none has-content-margin-left-sm has-content-margin-left-none-tablet columns">
+										<div class="column is-11 is-11-mobile padding-none has-content-margin-right-xs">
+											<a class="unit-title display-block font-size-md has-line-height-reset" href="6-use-cases" data-linktype="relative-path">Use Azure Data Lake Storage Gen2 in data analytics workloads</a>
+
+											<span class="unit-duration font-size-xs margin-top-xxs has-text-subtle">min</span>
+										</div>
+										<div class="column is-1 is-1-mobile padding-none">
+											<span class="has-text-success docon docon-check is-shown-complete"></span>
+											<span class="docon docon-chevron-right-light font-size-h5 is-hidden-tablet is-hidden-complete"></span>
+										</div>
+									</div>
+								</li>
+								<li class="module-unit font-size-md position-relative padding-block-xs padding-block-xxs-tablet border-top border-top-none-tablet completable is-unstyled" data-unit-uid="learn.data-ai.introduction-to-azure-data-lake-storage.knowledge-check" data-progress-uid="learn.data-ai.introduction-to-azure-data-lake-storage.knowledge-check">
+									<div class="barLink is-unit-list-item margin-none has-content-margin-left-sm has-content-margin-left-none-tablet columns">
+										<div class="column is-11 is-11-mobile padding-none has-content-margin-right-xs">
+											<a class="unit-title display-block font-size-md has-line-height-reset" href="7-knowledge-check" data-linktype="relative-path">Module assessment</a>
+
+											<span class="unit-duration font-size-xs margin-top-xxs has-text-subtle">min</span>
+										</div>
+										<div class="column is-1 is-1-mobile padding-none">
+											<span class="has-text-success docon docon-check is-shown-complete"></span>
+											<span class="docon docon-chevron-right-light font-size-h5 is-hidden-tablet is-hidden-complete"></span>
+										</div>
+									</div>
+								</li>
+								<li class="module-unit font-size-md position-relative padding-block-xs padding-block-xxs-tablet border-top border-top-none-tablet completable is-unstyled" data-unit-uid="learn.data-ai-introduction-to-azure-data-lake-storage.summary" data-progress-uid="learn.data-ai-introduction-to-azure-data-lake-storage.summary">
+									<div class="barLink is-unit-list-item margin-none has-content-margin-left-sm has-content-margin-left-none-tablet columns">
+										<div class="column is-11 is-11-mobile padding-none has-content-margin-right-xs">
+											<a class="unit-title display-block font-size-md has-line-height-reset" href="8-summary" data-linktype="relative-path">Summary</a>
+
+											<span class="unit-duration font-size-xs margin-top-xxs has-text-subtle">min</span>
+										</div>
+										<div class="column is-1 is-1-mobile padding-none">
+											<span class="has-text-success docon docon-check is-shown-complete"></span>
+											<span class="docon docon-chevron-right-light font-size-h5 is-hidden-tablet is-hidden-complete"></span>
+										</div>
+									</div>
+								</li>
+						</ul>
+
+						<div id="module-attempts-container-v2" class="margin-top-sm has-loading-skeleton" aria-hidden="true" hidden="">
+							<hr>
+							<a class="button button-primary is-loading" href="">Take the module assessment</a>
+							<details class="details margin-top-sm">
+								<summary class="details-summary-reverse background-color-body-medium border-none">
+									<p class="font-weight-semibold font-size-lg margin-bottom-xxs">
+										Module Assessment Results</p>
+									<p class="font-weight-normal">Assess your understanding of this module. Sign in and answer all questions correctly to earn a pass designation on your profile.</p>
+								</summary>
+								<div aria-live="polite" aria-relevant="additions" id="module-attempts-list" class="details-content padding-block-xs padding-left-xl">
+									<ul data-test-id="attempts-list">
+										<li data-test-class="attempts-list-item" class="position-relative padding-block-sm  border-bottom">
+											<div class="columns">
+												<div class="column"><span class="font-weight-semibold"></span><span class="badge badge-filled badge-sm badge-success margin-left-xxs "></span>
+												</div>
+												<div class="column is-two-thirds display-flex justify-content-center align-items-center">
+													<span class="margin-right-xxs"></span>
+													<div class="score-meter flex-grow-1">
+														<meter class="meter is-binary" high="100" max="100" value="75" low="50" optimum="50" style="--optimum-percent: 50%">
+															<span class="optimum" aria-hidden="true" style="width: 50%"></span>
+														</meter>
+														<div class="meter-tick" style="left: 75%;"></div>
+													</div>
+												</div>
+											</div>
+										</li>
+									</ul>
+								</div>
+							</details>
+						</div>
+
+						<div id="ms--inline-notifications" class="margin-block-xs" data-bi-name="inline-notification"></div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+</div>
+					
+		<div class="is-mobile is-fixed-bottom is-hidden-tablet">
+			<a
+				href="#"
+				id="start-unit-mobile"
+				class="button button-block button-primary button-filled button-large is-radiusless margin-none"
+				data-bi-name="start"
+				data-test-id="start-unit-button"
+			>
+				<span>Start</span>
+				<span class="icon" aria-hidden="true">
+					<span class="docon docon-chevron-right-light"></span>
+				</span>
+			</a>
+		</div>
+	
+				</div>
+				
+			</div>
+		
+				</main>
+				  <div class="layout-body-footer " data-bi-name="layout-footer">
+		<footer
+			id="footer"
+			data-test-id="footer"
+			data-bi-name="footer"
+			class="footer-layout padding-xs padding-sm-desktop has-default-focus border-top"
+			role="contentinfo"
+		>
+			<div class="display-flex gap-xs flex-wrap-wrap is-full-height padding-right-lg-desktop">
+				
+		<a
+			data-mscc-ic="false"
+			href="#"
+			data-bi-name="select-locale"
+			class="locale-selector-link flex-shrink-0 button button-sm button-clear external-link-indicator"
+			id=""
+			title=""
+			><span class="icon" aria-hidden="true"
+				><span class="docon docon-world"></span></span
+			><span class="local-selector-link-text">en-us</span></a
+		>
+	 <div class="ccpa-privacy-link" data-ccpa-privacy-link hidden>
+		
+		<a
+			data-mscc-ic="false"
+			href="https://aka.ms/yourcaliforniaprivacychoices"
+			data-bi-name="your-privacy-choices"
+			class="button button-sm button-clear flex-shrink-0 external-link-indicator"
+			id=""
+			title=""
+			>
+		<svg
+			xmlns="http://www.w3.org/2000/svg"
+			viewBox="0 0 30 14"
+			xml:space="preserve"
+			height="16"
+			width="43"
+			aria-hidden="true"
+			focusable="false"
+		>
+			<path
+				d="M7.4 12.8h6.8l3.1-11.6H7.4C4.2 1.2 1.6 3.8 1.6 7s2.6 5.8 5.8 5.8z"
+				style="fill-rule:evenodd;clip-rule:evenodd;fill:#fff"
+			></path>
+			<path
+				d="M22.6 0H7.4c-3.9 0-7 3.1-7 7s3.1 7 7 7h15.2c3.9 0 7-3.1 7-7s-3.2-7-7-7zm-21 7c0-3.2 2.6-5.8 5.8-5.8h9.9l-3.1 11.6H7.4c-3.2 0-5.8-2.6-5.8-5.8z"
+				style="fill-rule:evenodd;clip-rule:evenodd;fill:#06f"
+			></path>
+			<path
+				d="M24.6 4c.2.2.2.6 0 .8L22.5 7l2.2 2.2c.2.2.2.6 0 .8-.2.2-.6.2-.8 0l-2.2-2.2-2.2 2.2c-.2.2-.6.2-.8 0-.2-.2-.2-.6 0-.8L20.8 7l-2.2-2.2c-.2-.2-.2-.6 0-.8.2-.2.6-.2.8 0l2.2 2.2L23.8 4c.2-.2.6-.2.8 0z"
+				style="fill:#fff"
+			></path>
+			<path
+				d="M12.7 4.1c.2.2.3.6.1.8L8.6 9.8c-.1.1-.2.2-.3.2-.2.1-.5.1-.7-.1L5.4 7.7c-.2-.2-.2-.6 0-.8.2-.2.6-.2.8 0L8 8.6l3.8-4.5c.2-.2.6-.2.9 0z"
+				style="fill:#06f"
+			></path>
+		</svg>
+	
+			<span>Your Privacy Choices</span></a
+		>
+	
+	</div>
+				<div class="flex-shrink-0">
+		<div class="dropdown has-caret-up">
+			<button
+				data-test-id="theme-selector-button"
+				class="dropdown-trigger button button-clear button-sm inner-focus theme-dropdown-trigger"
+				aria-controls="{{ themeMenuId }}"
+				aria-haspopup="true"
+				aria-expanded="false"
+				data-bi-name="theme"
+			>
+				<span class="icon" aria-hidden="true"><span class="docon docon-sun"></span></span>
+				<span>Theme</span>
+				<span class="icon expanded-indicator" aria-hidden="true">
+					<span class="docon docon-chevron-down-light"></span>
+				</span>
+			</button>
+			<div class="dropdown-menu" id="{{ themeMenuId }}" role="menu">
+				<ul class="theme-selector padding-xxs" data-test-id="theme-dropdown-menu" role="none">
+					<li class="theme display-block" role="none">
+						<button
+							class="button button-clear button-sm theme-control button-block justify-content-flex-start text-align-left"
+							role="menuitemradio"
+							aria-checked="false"
+							data-theme-to="light"
+							tabindex="-1"
+						>
+							<span class="theme-light margin-right-xxs">
+								<span
+									class="theme-selector-icon border display-inline-block has-body-background"
+									aria-hidden="true"
+								>
+									<svg class="svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 22 14">
+										<rect width="22" height="14" class="has-fill-body-background" />
+										<rect x="5" y="5" width="12" height="4" class="has-fill-secondary" />
+										<rect x="5" y="2" width="2" height="1" class="has-fill-secondary" />
+										<rect x="8" y="2" width="2" height="1" class="has-fill-secondary" />
+										<rect x="11" y="2" width="3" height="1" class="has-fill-secondary" />
+										<rect x="1" y="1" width="2" height="2" class="has-fill-secondary" />
+										<rect x="5" y="10" width="7" height="2" rx="0.3" class="has-fill-primary" />
+										<rect x="19" y="1" width="2" height="2" rx="1" class="has-fill-secondary" />
+									</svg>
+								</span>
+							</span>
+							<span> Light </span>
+						</button>
+					</li>
+					<li class="theme display-block" role="none">
+						<button
+							class="button button-clear button-sm theme-control button-block justify-content-flex-start text-align-left"
+							role="menuitemradio"
+							aria-checked="false"
+							data-theme-to="dark"
+							tabindex="-1"
+						>
+							<span class="theme-dark margin-right-xxs">
+								<span
+									class="border theme-selector-icon display-inline-block has-body-background"
+									aria-hidden="true"
+								>
+									<svg class="svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 22 14">
+										<rect width="22" height="14" class="has-fill-body-background" />
+										<rect x="5" y="5" width="12" height="4" class="has-fill-secondary" />
+										<rect x="5" y="2" width="2" height="1" class="has-fill-secondary" />
+										<rect x="8" y="2" width="2" height="1" class="has-fill-secondary" />
+										<rect x="11" y="2" width="3" height="1" class="has-fill-secondary" />
+										<rect x="1" y="1" width="2" height="2" class="has-fill-secondary" />
+										<rect x="5" y="10" width="7" height="2" rx="0.3" class="has-fill-primary" />
+										<rect x="19" y="1" width="2" height="2" rx="1" class="has-fill-secondary" />
+									</svg>
+								</span>
+							</span>
+							<span> Dark </span>
+						</button>
+					</li>
+					<li class="theme display-block" role="none">
+						<button
+							class="button button-clear button-sm theme-control button-block justify-content-flex-start text-align-left"
+							role="menuitemradio"
+							aria-checked="false"
+							data-theme-to="high-contrast"
+							tabindex="-1"
+						>
+							<span class="theme-high-contrast margin-right-xxs">
+								<span
+									class="border theme-selector-icon display-inline-block has-body-background"
+									aria-hidden="true"
+								>
+									<svg class="svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 22 14">
+										<rect width="22" height="14" class="has-fill-body-background" />
+										<rect x="5" y="5" width="12" height="4" class="has-fill-secondary" />
+										<rect x="5" y="2" width="2" height="1" class="has-fill-secondary" />
+										<rect x="8" y="2" width="2" height="1" class="has-fill-secondary" />
+										<rect x="11" y="2" width="3" height="1" class="has-fill-secondary" />
+										<rect x="1" y="1" width="2" height="2" class="has-fill-secondary" />
+										<rect x="5" y="10" width="7" height="2" rx="0.3" class="has-fill-primary" />
+										<rect x="19" y="1" width="2" height="2" rx="1" class="has-fill-secondary" />
+									</svg>
+								</span>
+							</span>
+							<span> High contrast </span>
+						</button>
+					</li>
+				</ul>
+			</div>
+		</div>
+	</div>
+			</div>
+			<ul class="links" data-bi-name="footerlinks">
+				<li class="manage-cookies-holder" hidden=""></li>
+				<li>
+		
+		<a
+			data-mscc-ic="false"
+			href="https://learn.microsoft.com/en-us/principles-for-ai-generated-content"
+			data-bi-name="aiDisclaimer"
+			class=" external-link-indicator"
+			id=""
+			title=""
+			>AI Disclaimer</a
+		>
+	
+	</li><li>
+		
+		<a
+			data-mscc-ic="false"
+			href="https://learn.microsoft.com/en-us/previous-versions/"
+			data-bi-name="archivelink"
+			class=" external-link-indicator"
+			id=""
+			title=""
+			>Previous Versions</a
+		>
+	
+	</li> <li>
+		
+		<a
+			data-mscc-ic="false"
+			href="https://techcommunity.microsoft.com/t5/microsoft-learn-blog/bg-p/MicrosoftLearnBlog"
+			data-bi-name="bloglink"
+			class=" external-link-indicator"
+			id=""
+			title=""
+			>Blog</a
+		>
+	
+	</li> <li>
+		
+		<a
+			data-mscc-ic="false"
+			href="https://learn.microsoft.com/en-us/contribute"
+			data-bi-name="contributorGuide"
+			class=" external-link-indicator"
+			id=""
+			title=""
+			>Contribute</a
+		>
+	
+	</li><li>
+		
+		<a
+			data-mscc-ic="false"
+			href="https://go.microsoft.com/fwlink/?LinkId=521839"
+			data-bi-name="privacy"
+			class=" external-link-indicator"
+			id=""
+			title=""
+			>Privacy</a
+		>
+	
+	</li><li>
+		
+		<a
+			data-mscc-ic="false"
+			href="https://go.microsoft.com/fwlink/?linkid=2259814"
+			data-bi-name="consumer-health-privacy"
+			class=" external-link-indicator"
+			id=""
+			title=""
+			>Consumer Health Privacy</a
+		>
+	
+	</li><li>
+		
+		<a
+			data-mscc-ic="false"
+			href="https://learn.microsoft.com/en-us/legal/termsofuse"
+			data-bi-name="termsofuse"
+			class=" external-link-indicator"
+			id=""
+			title=""
+			>Terms of Use</a
+		>
+	
+	</li><li>
+		
+		<a
+			data-mscc-ic="false"
+			href="https://www.microsoft.com/legal/intellectualproperty/Trademarks/"
+			data-bi-name="trademarks"
+			class=" external-link-indicator"
+			id=""
+			title=""
+			>Trademarks</a
+		>
+	
+	</li>
+				<li>&copy; Microsoft 2026</li>
+			</ul>
+		</footer>
+	</footer>
+			<noscript><img src="https://learn.microsoft.com/akam/13/pixel_b3b3529?a=dD0yNzcxNWZiYjQ0MGJiZmRmNWU1N2Y0MTFiNDA3ZTM2MTdhZDE3Y2I1JmpzPW9mZg==" style="visibility: hidden; position: absolute; left: -999px; top: -999px;" /></noscript></body>
+		</html>

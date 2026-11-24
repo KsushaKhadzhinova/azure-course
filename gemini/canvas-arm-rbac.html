@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Архитектурный конспект: Управление ресурсами и безопасность в Azure (ARM & RBAC)</title>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+    <script>mermaid.initialize({startOnLoad:true, theme: 'default'});</script>
+    <style>
+        /* Базовые стили: Светлая тема, черный текст, Times New Roman 14px */
+        body {
+            font-family: 'Times New Roman', Times, serif;
+            font-size: 14px;
+            color: #000000;
+            background-color: #FAFAFA;
+            line-height: 1.6;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        /* Заголовки */
+        h1, h2, h3, h4 {
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            color: #2C3E50;
+            margin-top: 1.5em;
+            margin-bottom: 0.5em;
+        }
+        h1 { 
+            font-size: 30px; 
+            text-transform: uppercase; 
+            border-bottom: 3px solid #3498DB; 
+            padding-bottom: 12px; 
+            color: #2980B9; 
+            text-align: center;
+        }
+        h2 { 
+            font-size: 24px; 
+            color: #27AE60; 
+            border-left: 5px solid #2ECC71; 
+            padding-left: 15px; 
+            background-color: #EAFAF1;
+            padding: 10px 15px;
+            margin-top: 50px;
+        }
+        h3 { 
+            font-size: 18px; 
+            color: #8E44AD; 
+            font-style: italic; 
+            font-weight: bold;
+        }
+
+        /* Выделение кода */
+        code { 
+            font-family: 'Courier New', Courier, monospace; 
+            background-color: #EAECEE; 
+            padding: 3px 6px; 
+            border-radius: 4px; 
+            color: #C0392B; 
+            font-weight: bold; 
+            font-size: 13px;
+        }
+        pre {
+            background-color: #F4F6F7;
+            border-left: 4px solid #BDC3C7;
+            padding: 15px;
+            overflow-x: auto;
+        }
+        pre code {
+            background-color: transparent;
+            padding: 0;
+            border: none;
+            color: #2C3E50;
+        }
+
+        /* Блоки контента */
+        .tldr-box { 
+            background-color: #EBF5FB; 
+            border: 1px solid #AED6F1; 
+            padding: 20px; 
+            border-radius: 8px; 
+            margin-bottom: 25px; 
+            font-size: 15px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+        .deep-dive { 
+            background-color: #F8F9F9; 
+            border: 1px solid #D5DBDB; 
+            padding: 20px; 
+            border-radius: 8px; 
+            margin: 25px 0; 
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+        .best-practice { 
+            background-color: #FDEDEC; 
+            border-left: 5px solid #E74C3C; 
+            padding: 20px; 
+            margin: 20px 0; 
+            border-radius: 0 8px 8px 0;
+        }
+        .security-warning {
+            background-color: #FFF3CD;
+            border-left: 5px solid #FFC107;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 0 8px 8px 0;
+        }
+
+        /* Таблицы */
+        table { 
+            width: 100%; 
+            border-collapse: collapse; 
+            margin: 25px 0; 
+            font-family: 'Segoe UI', sans-serif; 
+            font-size: 14px; 
+            background-color: #FFFFFF;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        th, td { 
+            border: 1px solid #BDC3C7; 
+            padding: 15px; 
+            text-align: left; 
+        }
+        th { 
+            background-color: #34495E; 
+            color: #FFFFFF; 
+            font-weight: 600;
+        }
+        tr:nth-child(even) { background-color: #F8F9F9; }
+        tr:hover { background-color: #EBF5FB; }
+
+        /* Контейнеры для графики */
+        .visual-container { 
+            text-align: center; 
+            background: #FFFFFF; 
+            padding: 25px; 
+            border: 1px solid #EAEDED; 
+            border-radius: 12px; 
+            margin: 30px 0; 
+            box-shadow: 0 6px 12px rgba(0,0,0,0.08); 
+        }
+        .visual-container img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+        }
+        .caption {
+            font-family: 'Arial', sans-serif;
+            font-size: 13px;
+            color: #7F8C8D;
+            margin-top: 15px;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Архитектурный конспект: Управление ресурсами и безопасность в Azure (ARM & RBAC)</h1>
+
+    <div class="tldr-box">
+        <p><strong>TL;DR:</strong> Для создания любой облачной инфраструктуры вам нужен координатор и охранник. В Azure координатором выступает <strong>Azure Resource Manager (ARM)</strong> — единый уровень управления и развертывания (IaC). Охранником работает <strong>Azure RBAC</strong> в связке с <strong>Microsoft Entra ID</strong>.</p>
+    </div>
+
+    <!-- БЛОК 1: AZURE RESOURCE MANAGER И ПРОВАЙДЕРЫ -->
+    <h2>Модуль 1. Azure Resource Manager и Поставщики ресурсов</h2>
+    
+    <div class="visual-container">
+        <img src="image_78919a.png" alt="Уровень управления Azure Resource Manager">
+        <div class="caption">Рис 1. ARM выступает как единая "воронка" (шлюз). Действие в Portal, скрипт в CLI или вызов REST API дают абсолютно идентичный результат.</div>
+    </div>
+
+    <div class="deep-dive" style="border-left: 5px solid #8E44AD; background-color: #F4ECF7;">
+        <h3 style="color: #7D3C98; margin-top: 0;">Архитектурный фундамент: Плоскость управления (Control Plane) vs Плоскость данных (Data Plane)</h3>
+        <table style="margin-top: 15px; background-color: #FFFFFF;">
+            <thead>
+                <tr>
+                    <th style="background-color: #8E44AD;">Плоскость управления (Control Plane)</th>
+                    <th style="background-color: #2980B9;">Плоскость данных (Data Plane)</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>Управляет:</strong> Созданием, удалением и настройкой самих ресурсов (создать ВМ, базу данных).</td>
+                    <td><strong>Управляет:</strong> Работой с данными <em>внутри</em> ресурса (чтение таблиц, загрузка файлов, RDP на виртуалку).</td>
+                </tr>
+                <tr>
+                    <td><strong>Глобальный URL:</strong> <code>https://management.azure.com</code></td>
+                    <td><strong>Локальный URL:</strong> Уникален для ресурса (например, <code>https://myaccount.blob.core.windows.net</code>).</td>
+                </tr>
+                <tr>
+                    <td><strong>Ограничения:</strong> Политики Azure, Блокировки ресурсов (Locks) и ARM RBAC.</td>
+                    <td><strong>Ограничения:</strong> Собственные механизмы БД, ключи доступа или Data Plane RBAC.</td>
+                </tr>
+            </tbody>
+        </table>
+        <p><strong>Главное правило отказоустойчивости:</strong> Даже если глобальный портал Azure временно недоступен, ваши приложения продолжат работу! Они общаются с базами напрямую через <strong>Data Plane</strong>.</p>
+    </div>
+
+    <h3>Поставщики ресурсов (Resource Providers)</h3>
+    <p>Каждая служба Azure работает через своего поставщика. Например, хранилище ключей — это <code>Microsoft.KeyVault</code>, а ВМ — <code>Microsoft.Compute</code>.</p>
+    
+    <div class="security-warning">
+        <strong>Best Practice: Принцип наименьших привилегий для Провайдеров</strong><br>
+        <p>Не регистрируйте поставщиков ресурсов "на всякий случай". При регистрации некоторых провайдеров (например, через Windows Azure Service Management API) в вашем тенанте Microsoft Entra автоматически создаются служебные Enterprise-приложения. Злоумышленник не может использовать незарегистрированного поставщика для создания скрытых ресурсов (криптомайнеров) в вашей подписке.</p>
+    </div>
+
+    <h3>Защита инфраструктуры: Блокировки ресурсов (Resource Locks)</h3>
+    <p>Блокировки применяются <strong>ТОЛЬКО</strong> к плоскости управления (Control Plane):</p>
+    <ul>
+        <li><code>CanNotDelete</code>: Ресурс можно читать и изменять, но нельзя удалить.</li>
+        <li><code>ReadOnly</code>: Ресурс можно только читать (любые POST/PUT запросы уровня управления блокируются).</li>
+    </ul>
+    <p><em>Побочные эффекты ReadOnly:</em> Вы не сможете посмотреть ключи доступа Storage Account на портале, так как портал делает <code>POST</code> запрос (Control Plane) для получения ключей. При этом само приложение, если у него уже есть ключ, продолжит писать данные (Data Plane).</p>
+
+
+    <!-- БЛОК 2: SCOPES И ЛИМИТЫ -->
+    <h2>Модуль 2. Масштаб управления (Scopes), Иерархия и Лимиты</h2>
+
+    <div class="visual-container">
+        <div class="mermaid">
+            graph TD
+                Root[Root Management Group<br>Уровень Тенанта] --> MG1[Management Group: Corp]
+                Root --> MG2[Management Group: IT]
+                
+                MG1 --> Sub1[Subscription: Prod]
+                MG1 --> Sub2[Subscription: Dev]
+                
+                Sub1 --> RG1[Resource Group: WebApp]
+                
+                RG1 --> Res1[Resource: VM]
+                RG1 --> Res2[Resource: SQL]
+                
+                classDef mg fill:#D6EAF8,stroke:#2980B9,stroke-width:2px;
+                classDef sub fill:#D5F5E3,stroke:#27AE60,stroke-width:2px;
+                classDef rg fill:#FCF3CF,stroke:#F39C12,stroke-width:2px;
+                classDef res fill:#E8DAEF,stroke:#8E44AD,stroke-width:2px;
+                
+                class Root,MG1,MG2 mg;
+                class Sub1,Sub2 sub;
+                class RG1 rg;
+                class Res1,Res2 res;
+        </div>
+        <div class="caption">Рис 2. Иерархия областей (Scopes) Azure. Назначение роли или политики на верхнем уровне автоматически каскадно применяется ко всем нижестоящим элементам.</div>
+    </div>
+
+    <div class="deep-dive">
+        <h3>Архитектура Групп Управления (Management Groups)</h3>
+        <ul>
+            <li><strong>Масштаб:</strong> Один тенант (Microsoft Entra ID) может содержать до <strong>10 000</strong> групп управления.</li>
+            <li><strong>Корневая группа (Root Management Group):</strong> В нее автоматически падают все новые подписки. Назначение политики (например, запрет регионов) на этот уровень влияет на <em>всю корпорацию</em>. Идентификатор группы совпадает с Tenant ID.</li>
+        </ul>
+    </div>
+
+    <h3>Механика перемещения и удаления ресурсов</h3>
+    <p>Перенос ресурсов (Resource Mover) — сложный процесс:</p>
+    <ul>
+        <li>Во время перемещения и исходная, и целевая Группы ресурсов <strong>блокируются на срок до 4 часов</strong>.</li>
+        <li>Ресурс переносится только вместе с зависимостями (частая ошибка <code>MissingMoveDependentResources</code>).</li>
+        <li>Назначения ролей (RBAC) <strong>НЕ перемещаются</strong> и становятся осиротевшими.</li>
+        <li>При <strong>удалении</strong> РГ (Resource Group), Resource Manager сначала удаляет дочерние элементы, затем управляющие ресурсы (с флагом <code>managedBy</code>), а в конце — независимые. Удаление необратимо.</li>
+    </ul>
+
+
+    <!-- БЛОК 3: ИНФРАСТРУКТУРА КАК КОД (BICEP) -->
+    <h2>Модуль 3. Инфраструктура как код (Bicep) и Кросс-уровневые деплои</h2>
+
+    <div class="deep-dive">
+        <h3>Эволюция IaC: ARM JSON → Bicep</h3>
+        <p>Bicep — это предметно-ориентированный язык, который транслируется в ARM JSON, но избавляет инженера от "скобочного ада". Преимущества: автоматическое разрешение <code>dependsOn</code>, отсутствие "стейт-файлов" (в отличие от Terraform, состояние хранит сам Azure) и интеграция с операцией <strong>What-If</strong>.</p>
+    </div>
+
+    <div class="best-practice">
+        <strong>Кросс-уровневые развертывания (Cross-Scope Deployments)</strong><br>
+        <p>IaC позволяет разворачивать инфраструктуру не только внутри <code>Resource Group</code>, но и на более высоких уровнях:</p>
+        <ul>
+            <li><strong>Subscription Scope:</strong> Позволяет автоматизировать создание самих Resource Groups и политик. (Например, <code>az deployment sub create</code>).</li>
+            <li><strong>Management Group Scope:</strong> Позволяет применить Azure Policy или назначить роли RBAC сразу на сотни подписок внутри группы.</li>
+            <li><strong>Tenant Scope:</strong> Используется для глобального назначения ролей. (Требует роли Owner в корне).</li>
+        </ul>
+    </div>
+
+
+    <!-- БЛОК 4: ENTRA ID, RBAC И ABAC -->
+    <h2>Модуль 4. Microsoft Entra ID, Роли и Условия (Azure ABAC)</h2>
+
+    <div class="tldr-box">
+        <p>Главная путаница новичков — разница между ролями Azure и Entra ID.</p>
+        <ul>
+            <li><strong>Роли Azure (Azure RBAC):</strong> Управляют ресурсами (ВМ, базы, сети). <em>Пример: Virtual Machine Contributor.</em></li>
+            <li><strong>Роли Microsoft Entra:</strong> Управляют пользователями, лицензиями и паролями в каталоге. <em>Пример: Global Administrator, User Administrator.</em></li>
+        </ul>
+        <p><em>Секрет:</em> Global Administrator по умолчанию НЕ имеет доступа к ресурсам Azure. Но он может воспользоваться кнопкой "Эскалация прав" (Elevate Access), чтобы временно выдать себе роль <strong>User Access Administrator</strong> на уровне Root Scope (<code>/</code>), подчинив себе все подписки.</p>
+    </div>
+
+    <h3>Анатомия пользовательских ролей (Custom Roles)</h3>
+    <p>Каждый тенант поддерживает до <strong>5000 кастомных ролей</strong>. Определение роли состоит из массивов:</p>
+    <ul>
+        <li><code>Actions</code> / <code>NotActions</code> — Управление плоскостью управления (Control Plane).</li>
+        <li><code>DataActions</code> / <code>NotDataActions</code> — Управление плоскостью данных (Data Plane).</li>
+        <li><code>AssignableScopes</code> — Где эта роль может быть назначена (не используйте корень <code>/</code> для кастомных ролей!).</li>
+    </ul>
+
+    <div class="deep-dive" style="border-left: 5px solid #E67E22;">
+        <h3 style="color: #D35400; margin-top: 0;">Математика вычисления эффективных прав</h3>
+        <p>Доступ по RBAC вычисляется по формуле: <code>Actions - NotActions = Эффективные права</code>. Если у вас две роли (одна разрешает, другая использует NotActions), то <strong>разрешение побеждает</strong> (NotActions не является жестким запретом).</p>
+        <p>Однако, <strong>Запреты назначений (Deny Assignments)</strong>, которые создаются системой (например, Azure Blueprints), имеют наивысший приоритет и блокируют доступ вне зависимости от выданных ролей.</p>
+    </div>
+
+    <h3>Azure ABAC (Attribute-Based Access Control)</h3>
+    <p>Иногда обычного RBAC недостаточно. Azure ABAC добавляет <strong>Условия (Conditions)</strong> к назначениям ролей. Это помогает кардинально снизить количество выдаваемых ролей (лимит: 5000 на подписку).</p>
+    <div class="visual-container">
+        <pre style="text-align: left; font-size: 12px; margin: 0;"><code>
+(
+  !(ActionMatches{'Microsoft.Storage/storageAccounts/.../blobs/read'})
+)
+OR
+(
+  @Resource[.../blobs/tags:Project] StringEqualsIgnoreCase 'Cascade'
+)
+        </code></pre>
+        <div class="caption">Пример ABAC: Пользователь может читать только те Blob-объекты, на которых висит тег Project=Cascade.</div>
+    </div>
+
+    <h3>Интеграция с PIM (Privileged Identity Management)</h3>
+    <p>При наличии лицензии <strong>Entra ID P2</strong>, вы можете назначать роли не навсегда, а по принципу JIT (Just-In-Time):</p>
+    <ul>
+        <li><strong>Active (Активные):</strong> Роль назначена и работает сразу (может быть постоянной или ограниченной по времени).</li>
+        <li><strong>Eligible (Допустимые/По запросу):</strong> Пользователь должен явно "активировать" роль. Во время активации может потребоваться ввод MFA, бизнес-обоснование или согласование от менеджера.</li>
+    </ul>
+
+    <div class="best-practice" style="border-left-color: #34495E; background-color: #EAEDED;">
+        <strong>Ограниченное делегирование прав (Constrained Delegation)</strong><br>
+        <p>Не выдавайте пользователям роль <em>Owner</em> или <em>User Access Administrator</em>, чтобы они могли раздавать права другим! Они смогут выдать права кому угодно, включая себя.</p>
+        <p>Вместо этого используйте роль <strong>Role Based Access Control Administrator</strong> в связке с <strong>Условиями (ABAC)</strong>. Например, вы можете задать условие: <em>"Этот тимлид может назначать только роль 'Backup Reader' и только участникам группы 'Marketing'"</em>.</p>
+    </div>
+
+    <!-- ИТОГИ -->
+    <div class="summary-box">
+        <h2 style="border: none; background: none; color: #2C3E50; margin: 0; padding: 0;">Сводка и Итоги</h2>
+        <div class="xp-badge" style="background-color: #3498DB; color: #FFF;">Завершено | Получено XP: 250</div>
+        
+        <div style="text-align: left; background: #FFFFFF; padding: 25px; border-radius: 8px; margin-top: 20px;">
+            <p><strong>Управление ресурсами и безопасность — это основа надежной облачной архитектуры.</strong></p>
+            
+            <ul style="color: #333; line-height: 1.8;">
+                <li><strong>Архитектура:</strong> Строгое разделение Control Plane (управление) и Data Plane (данные). Понимание того, как Resource Locks блокируют портал, но не останавливают транзакции.</li>
+                <li><strong>Масштаб и Лимиты:</strong> Управление тысячами подписок через Management Groups, понимание 4-часовых блокировок при перемещении (Resource Mover) и лимитов в 800 ресурсов на группу.</li>
+                <li><strong>IaC (Bicep):</strong> Возможность разворачивать инфраструктуру (политики, РГ) не только на уровне ресурсов, но и на уровне подписок и тенантов.</li>
+                <li><strong>Безопасность (RBAC, ABAC, PIM):</strong> Математика вычисления прав (<code>Actions - NotActions</code>), использование тегов для фильтрации доступа к блобам (ABAC) и защита привилегированных учеток через временную активацию ролей (PIM / Eligible assignments).</li>
+            </ul>
+        </div>
+    </div>
+
+</body>
+</html>

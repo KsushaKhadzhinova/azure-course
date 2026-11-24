@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Архитектурный конспект: Azure Cosmos DB</title>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+    <script>mermaid.initialize({startOnLoad:true, theme: 'default'});</script>
+    <style>
+        /* Базовые стили: Светлая тема, черный текст, Times New Roman 14px */
+        body {
+            font-family: 'Times New Roman', Times, serif;
+            font-size: 14px;
+            color: #000000;
+            background-color: #FAFAFA;
+            line-height: 1.6;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        /* Заголовки */
+        h1, h2, h3, h4 {
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            color: #2C3E50;
+            margin-top: 1.5em;
+            margin-bottom: 0.5em;
+        }
+        h1 { 
+            font-size: 30px; 
+            text-transform: uppercase; 
+            border-bottom: 3px solid #F39C12; 
+            padding-bottom: 12px; 
+            color: #D35400; 
+            text-align: center;
+        }
+        h2 { 
+            font-size: 24px; 
+            color: #2980B9; 
+            border-left: 5px solid #3498DB; 
+            padding-left: 15px; 
+            background-color: #EBF5FB;
+            padding: 10px 15px;
+            margin-top: 50px;
+        }
+        h3 { 
+            font-size: 18px; 
+            color: #8E44AD; 
+            font-style: italic; 
+            font-weight: bold;
+        }
+
+        /* Выделение кода */
+        code { 
+            font-family: 'Courier New', Courier, monospace; 
+            background-color: #EAECEE; 
+            padding: 3px 6px; 
+            border-radius: 4px; 
+            color: #C0392B; 
+            font-weight: bold; 
+            font-size: 13px;
+        }
+
+        /* Блоки контента */
+        .tldr-box { 
+            background-color: #FDFEFE; 
+            border: 1px solid #D5DBDB; 
+            border-left: 5px solid #F39C12;
+            padding: 20px; 
+            border-radius: 4px; 
+            margin-bottom: 25px; 
+            font-size: 15px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+        .analogy-box { 
+            background-color: #FEF9E7; 
+            border-left: 5px solid #F1C40F; 
+            padding: 20px; 
+            margin-bottom: 25px; 
+            border-radius: 0 8px 8px 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        .deep-dive { 
+            background-color: #F8F9F9; 
+            border: 1px solid #D5DBDB; 
+            padding: 20px; 
+            border-radius: 8px; 
+            margin: 25px 0; 
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+        .best-practice { 
+            background-color: #FDEDEC; 
+            border-left: 5px solid #E74C3C; 
+            padding: 20px; 
+            margin: 20px 0; 
+            border-radius: 0 8px 8px 0;
+        }
+
+        /* Таблицы */
+        table { 
+            width: 100%; 
+            border-collapse: collapse; 
+            margin: 25px 0; 
+            font-family: 'Segoe UI', sans-serif; 
+            font-size: 14px; 
+            background-color: #FFFFFF;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        th, td { 
+            border: 1px solid #BDC3C7; 
+            padding: 15px; 
+            text-align: left; 
+        }
+        th { 
+            background-color: #34495E; 
+            color: #FFFFFF; 
+            font-weight: 600;
+        }
+        tr:nth-child(even) { background-color: #F8F9F9; }
+        tr:hover { background-color: #EBF5FB; }
+
+        /* Контейнеры для графики */
+        .visual-container { 
+            text-align: center; 
+            background: #FFFFFF; 
+            padding: 25px; 
+            border: 1px solid #EAEDED; 
+            border-radius: 12px; 
+            margin: 30px 0; 
+            box-shadow: 0 6px 12px rgba(0,0,0,0.08); 
+        }
+        .visual-container img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+        }
+        .caption {
+            font-family: 'Arial', sans-serif;
+            font-size: 13px;
+            color: #7F8C8D;
+            margin-top: 15px;
+            font-style: italic;
+        }
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Архитектурный конспект: Azure Cosmos DB и Экосистема NoSQL</h1>
+
+    <div class="tldr-box">
+        <p><strong>TL;DR:</strong> Реляционные базы данных (SQL) идеальны для строгих схем, но их сложно глобально масштабировать. <strong>Azure Cosmos DB</strong> — это полностью управляемая PaaS-служба NoSQL баз данных. Она не зависит от схемы (schema-agnostic), гарантирует задержку &lt;10 миллисекунд по всему миру, обладает SLA 99,999% и поддерживает 5 различных API (NoSQL, MongoDB, Cassandra, Gremlin, Table) под капотом одного движка.</p>
+    </div>
+
+    <div class="analogy-box">
+        <strong>Аналогия из жизни (Библиотека vs Интернет-поиск):</strong><br>
+        <p>Реляционная БД — это классическая библиотека. Каждая книга (строка) должна иметь строгую карточку: Автор, Год, Жанр (колонки). Если вы принесете аудиокассету, библиотекарь откажется её принять, так как для неё нет колонок в картотеке. Чтобы изменить картотеку, нужно закрыть библиотеку на ремонт (миграция схемы).</p>
+        <p><strong>Cosmos DB (NoSQL)</strong> — это поисковая система в интернете. Вы можете «закинуть» туда текстовую статью, видео или товар с 50 уникальными характеристиками. Система автоматически проиндексирует каждое слово (Automatic Indexing) и мгновенно найдет нужный документ, независимо от его структуры.</p>
+    </div>
+
+    <!-- БЛОК 1: АРХИТЕКТУРА И ИЕРАРХИЯ -->
+    <h2>Модуль 1. Архитектура и Механика Секционирования (Partitioning)</h2>
+
+    <div class="visual-container">
+        <div class="mermaid">
+            graph LR
+                subgraph Container [Логический Контейнер (Logical Partition)]
+                    Doc1[Item 1\n/City=London]
+                    Doc2[Item 2\n/City=Paris]
+                    Doc3[Item 3\n/City=London]
+                end
+                
+                subgraph Physical [Физические Серверы под капотом]
+                    P1[(Physical Partition 1\nHash: London)]
+                    P2[(Physical Partition 2\nHash: Paris)]
+                end
+                
+                Doc1 --> P1
+                Doc3 --> P1
+                Doc2 --> P2
+                
+                style Container fill:#EBF5FB,stroke:#2980B9,stroke-width:2px;
+                style Physical fill:#FDEDEC,stroke:#E74C3C,stroke-width:2px;
+        </div>
+        <div class="caption">Рис 1. Механика секционирования Cosmos DB. Встроенный роутер хеширует Partition Key каждого документа и автоматически распределяет их по физическим серверам для бесконечного горизонтального масштабирования.</div>
+    </div>
+
+    <div class="deep-dive">
+        <h3>Под капотом (Deep Dive): Физическое секционирование</h3>
+        <p>Cosmos DB обеспечивает бесконечное горизонтальное масштабирование благодаря механизму секционирования. Контейнер — это логическая единица, но под капотом данные разбиваются на физические серверы на основе <strong>Ключа секции (Partition Key)</strong>.</p>
+        <p><em>Ограничение:</em> Одна логическая секция (все документы с абсолютно одинаковым значением Partition Key) не может превышать размер в <strong>20 ГБ</strong>.</p>
+    </div>
+
+    <div class="best-practice">
+        <strong>Best Practices vs. Anti-patterns (Выбор ключа партиционирования):</strong><br>
+        <span style="color: #27AE60; font-weight: bold;">✔ Правильно (Best Practice):</span> Выбирать ключ с высокой кардинальностью (множеством уникальных значений), например <code>/DeviceId</code> для IoT или <code>/UserId</code> для профилей. Это равномерно распределит нагрузку (хранение и запросы) по всем серверам кластера.<br>
+        <span style="color: #C0392B; font-weight: bold;">✖ Неправильно (Anti-pattern):</span> Выбрать ключ <code>/City</code>, если 90% ваших пользователей живут в одном городе. Один физический сервер возьмет на себя 90% нагрузки и станет "горячей точкой" (Hot Partition), быстро упрется в лимит 20 ГБ, а остальные серверы будут простаивать.
+    </div>
+
+
+    <!-- БЛОК 2: RU/S И МОДЕЛИ ПРОПУСКНОЙ СПОСОБНОСТИ -->
+    <h2>Модуль 2. Экономика производительности (Единицы Запроса - RU/s)</h2>
+
+    <p>В Cosmos DB вы не арендуете процессоры или гигабайты оперативной памяти. Валютой производительности является <strong>Единица запроса (Request Unit - RU/s)</strong>. Это синтетическая метрика, объединяющая CPU, IOPS и RAM. <em>1 RU = стоимость чтения 1 документа размером 1 КБ по его ID и ключу секции.</em></p>
+
+    <h3>Компромиссы: Модели пропускной способности</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>Режим</th>
+                <th>Как это работает</th>
+                <th>Бизнес-сценарий</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><strong>Выделенная (Dedicated)</strong></td>
+                <td>Резервирование RU/s для конкретного контейнера.</td>
+                <td>Микросервис с предсказуемо высокой нагрузкой. Гарантия того, что "соседние" контейнеры не отберут ресурсы.</td>
+            </tr>
+            <tr>
+                <td><strong>Совместная (Shared)</strong></td>
+                <td>Бюджет RU/s выделяется на уровне Базы данных и делится между 25 контейнерами.</td>
+                <td>Множество мелких таблиц, которые редко нагружаются одновременно. Экономия средств.</td>
+            </tr>
+            <tr>
+                <td><strong>Бессерверная (Serverless)</strong></td>
+                <td>Отсутствие резервирования. Оплата строго за потребленные RU за каждый запрос.</td>
+                <td>Pet-проекты, тестирование, приложения с непредсказуемым редким трафиком (Spiky workloads). <em>Ограничено 1 регионом!</em></td>
+            </tr>
+            <tr>
+                <td><strong>Автомасштабирование</strong></td>
+                <td>Cosmos DB автоматически меняет RU/s в заданном диапазоне (например, от 400 до 4000).</td>
+                <td>Крупный E-commerce, где нагрузка зависит от времени суток (распродажи).</td>
+            </tr>
+        </tbody>
+    </table>
+
+
+    <!-- БЛОК 3: ГЛОБАЛЬНОЕ РАСПРЕДЕЛЕНИЕ И СОГЛАСОВАННОСТЬ -->
+    <h2>Модуль 3. Глобальное распределение и уровни согласованности (CAP-теорема)</h2>
+
+    <div class="visual-container">
+        <img src="image_4eca52.jpg" alt="Уровни согласованности">
+        <div class="caption">Рис 2. Компромисс между задержкой (доступностью) и строгой консистентностью. Session — выбор по умолчанию.</div>
+    </div>
+
+    <div class="deep-dive">
+        <h3>Под капотом (Deep Dive): Компромиссы согласованности (Trade-offs)</h3>
+        <p>Согласно CAP-теореме, распределенная база не может одновременно обеспечить идеальную Согласованность (Consistency) и Доступность (Availability) при разделении сети. Cosmos DB дает разработчику 5 "ручек" для тюнинга этого компромисса:</p>
+        
+        <table style="margin-top: 15px;">
+            <thead>
+                <tr>
+                    <th>Уровень</th>
+                    <th>Суть</th>
+                    <th>Цена (Trade-off)</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>Сильная (Strong)</strong></td>
+                    <td>Вы всегда читаете последнюю записанную версию. Как в реляционной БД на одном сервере.</td>
+                    <td>Самая высокая задержка записи. Запись должна быть подтверждена всеми репликами на планете.</td>
+                </tr>
+                <tr>
+                    <td><strong>Session (Сеанс)</strong></td>
+                    <td><strong>[Рекомендуемый]</strong> Вы гарантированно видите собственные записи внутри одной сессии (приложения).</td>
+                    <td>Пользователь на другом континенте может увидеть ваш комментарий с задержкой в пару миллисекунд.</td>
+                </tr>
+                <tr>
+                    <td><strong>В конечном счете (Eventual)</strong></td>
+                    <td>Данные когда-нибудь синхронизируются.</td>
+                    <td>Самая высокая доступность и минимальная задержка, но данные могут читаться в случайном порядке.</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+
+    <!-- БЛОК 4: МНОГОАПИЙНОСТЬ -->
+    <h2>Модуль 4. Мультимодельность и 5 API</h2>
+
+    <div class="visual-container">
+        <img src="image_4ec6d0.png" alt="5 API Azure Cosmos DB">
+        <div class="caption">Рис 3. Cosmos DB выступает единым универсальным движком для разных языков запросов и моделей данных.</div>
+    </div>
+
+    <p>Базовый формат хранения в Cosmos DB — ARS (Atom-Record-Sequence). Поверх этого слоя работают API-трансляторы, позволяющие мигрировать приложения без переписывания драйверов БД.</p>
+
+    <table>
+        <thead>
+            <tr>
+                <th>API</th>
+                <th>Формат / Язык</th>
+                <th>Лучший сценарий (Use Case)</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><strong>NoSQL (Core)</strong></td>
+                <td>JSON / SQL-подобный</td>
+                <td>Новые cloud-native проекты. Поддерживает зеркалирование в Fabric. Высшая производительность.</td>
+            </tr>
+            <tr>
+                <td><strong>MongoDB</strong></td>
+                <td>BSON / MQL</td>
+                <td>Миграция существующих приложений (MEAN/MERN стек) на базе MongoDB.</td>
+            </tr>
+            <tr>
+                <td><strong>Table</strong></td>
+                <td>Key-Value / OData</td>
+                <td>Переход с медленного Azure Table Storage для получения глобальной дистрибуции и авто-индексов.</td>
+            </tr>
+            <tr>
+                <td><strong>Cassandra</strong></td>
+                <td>Семейства столбцов / CQL</td>
+                <td>Миграция тяжелых логов и телеметрии с локальных кластеров Apache Cassandra.</td>
+            </tr>
+            <tr>
+                <td><strong>Gremlin (Graph)</strong></td>
+                <td>Узлы и Ребра (Графы)</td>
+                <td>Социальные сети, рекомендательные системы, системы антифрода.</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <div class="visual-container">
+        <img src="image_4ec6f0.png" alt="Пример графа Gremlin" style="max-width: 400px;">
+        <div class="caption">Рис 4. Графовая модель (Gremlin API). Связи ("работает в", "отчитывается") являются физическими объектами БД (рёбрами) наравне с самими узлами.</div>
+    </div>
+
+
+    <!-- БЛОК 5: ПРАКТИКА -->
+    <h2>Модуль 5. Практическая лаборатория (Provisioning & Data Explorer)</h2>
+
+    <div class="tldr-box">
+        <p><strong>TL;DR:</strong> Cosmos DB содержит встроенный инструмент <strong>Data Explorer</strong> прямо в Azure Portal. Он позволяет управлять контейнерами, создавать документы JSON вручную и писать SQL-запросы без установки дополнительных IDE.</p>
+    </div>
+
+    <h3>Шаг 1. Развертывание (Provisioning) Azure Cosmos DB</h3>
+    <p>Процесс создания начинается в Azure Marketplace. Важно правильно выбрать API, так как его нельзя изменить после создания аккаунта.</p>
+    
+    <div class="grid-2" style="margin: 25px 0;">
+        <div class="visual-container" style="margin: 0; padding: 15px;">
+            <img src="image_4ec2b7.jpg" alt="Поиск в Marketplace">
+            <div class="caption">1. Поиск Azure Cosmos DB в Marketplace.</div>
+        </div>
+        <div class="visual-container" style="margin: 0; padding: 15px;">
+            <img src="image_4ec2d2.jpg" alt="Выбор API">
+            <div class="caption">2. Выбор NoSQL API для нативной работы с JSON.</div>
+        </div>
+        <div class="visual-container" style="margin: 0; padding: 15px;">
+            <img src="image_4ec2d8.jpg" alt="Настройки Workload">
+            <div class="caption">3. Выбор типа рабочей нагрузки (Learning) для минимизации затрат.</div>
+        </div>
+        <div class="visual-container" style="margin: 0; padding: 15px;">
+            <img src="image_4ec2f6.png" alt="Проверка и создание">
+            <div class="caption">4. Валидация настроек (Review + create) и оценка времени.</div>
+        </div>
+        <div class="visual-container" style="margin: 0; padding: 15px; grid-column: span 2;">
+            <img src="image_4ec312.jpg" alt="Обзор созданного ресурса">
+            <div class="caption">5. Панель Overview готового ресурса Cosmos DB (статус Online, режим Capacity и локации).</div>
+        </div>
+    </div>
+
+    <h3>Шаг 2. Работа с данными (Data Explorer)</h3>
+
+    <div class="grid-2" style="margin: 25px 0;">
+        <div class="visual-container" style="margin: 0; padding: 15px;">
+            <img src="image_4ec38b.jpg" alt="Создание JSON документа">
+            <div class="caption">Создание нового JSON Item. Обратите внимание на автосгенерированные системные поля (начинаются с <code>_</code>, например <code>_ts</code> - timestamp).</div>
+        </div>
+        <div class="visual-container" style="margin: 0; padding: 15px;">
+            <img src="image_4ec637.jpg" alt="Выполнение SQL запроса">
+            <div class="caption">Выполнение SQL-запроса <code>SELECT * FROM c WHERE CONTAINS(c.name, "Helmet")</code> к JSON-документам.</div>
+        </div>
+    </div>
+
+    <div class="deep-dive">
+        <h3>Под капотом (Deep Dive): Системные свойства JSON</h3>
+        <p>При сохранении документа Cosmos DB автоматически добавляет метаданные для маршрутизации и оптимистичной блокировки (Optimistic Concurrency Control):</p>
+        <ul>
+            <li><code>id</code> — Уникальный идентификатор (обязателен).</li>
+            <li><code>_rid</code> — Внутренний идентификатор маршрутизации Cosmos DB.</li>
+            <li><code>_etag</code> — Тег сущности. Важнейшее поле для транзакций! Если два пользователя одновременно редактируют документ, база проверит <code>_etag</code> и отклонит вторую запись, защитив данные от перезаписи.</li>
+        </ul>
+        <p>В реальных приложениях разработчики не используют Data Explorer, а подключаются через SDK (C#, Python, Node.js), маршрутизируя запросы к NoSQL API.</p>
+    </div>
+
+    <!-- ИТОГИ -->
+    <div style="background: linear-gradient(135deg, #F0F3F4 0%, #E5E8E8 100%); border: 1px solid #CCD1D1; padding: 30px; border-radius: 12px; text-align: center; margin-top: 50px; box-shadow: 0 10px 20px rgba(0,0,0,0.05);">
+        <h2 style="border: none; background: none; color: #2C3E50; margin: 0; padding: 0;">Сводка и Итоги</h2>
+        <div style="display: inline-block; background-color: #F39C12; color: #FFFFFF; font-weight: bold; font-family: 'Segoe UI', sans-serif; padding: 8px 16px; border-radius: 20px; font-size: 16px; margin: 15px 0; box-shadow: 0 2px 5px rgba(243, 156, 18, 0.4);">Завершено | Получено XP: 100</div>
+        
+        <div style="text-align: left; background: #FFFFFF; padding: 25px; border-radius: 8px; margin-top: 20px;">
+            <p><strong>Azure Cosmos DB предоставляет решение глобальной базы данных для нереляционных данных с гарантированной низкой задержкой.</strong></p>
+            <p>В этом модуле мы успешно научились выполнять следующие задачи:</p>
+            <ul style="color: #333; line-height: 1.8;">
+                <li><strong>Описывать компоненты:</strong> Архитектуру логического/физического секционирования и расчет пропускной способности (RU/s).</li>
+                <li><strong>Определять API-интерфейсы:</strong> 5 трансляторов (NoSQL, MongoDB, Cassandra, Gremlin, Table), обеспечивающих мультимодальную совместимость.</li>
+                <li><strong>Настраивать и использовать:</strong> Процесс провижининга ресурса через Azure Portal, создание JSON-сущностей и выполнение SQL-запросов через Data Explorer.</li>
+            </ul>
+        </div>
+    </div>
+
+</body>
+</html>

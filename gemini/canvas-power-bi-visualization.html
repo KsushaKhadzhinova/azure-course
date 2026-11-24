@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Архитектурный конспект: Основы визуализации данных с Power BI</title>
+    <style>
+        /* Базовые стили: Светлая тема, черный текст, Times New Roman 14px */
+        body {
+            font-family: 'Times New Roman', Times, serif;
+            font-size: 14px;
+            color: #000000;
+            background-color: #FAFAFA;
+            line-height: 1.6;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        /* Заголовки */
+        h1, h2, h3, h4 {
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            color: #2C3E50;
+            margin-top: 1.5em;
+            margin-bottom: 0.5em;
+        }
+        h1 { 
+            font-size: 32px; 
+            text-transform: uppercase; 
+            border-bottom: 3px solid #F1C40F; 
+            padding-bottom: 12px; 
+            color: #D4AC0D; 
+            text-align: center;
+        }
+        h2 { 
+            font-size: 24px; 
+            color: #2980B9; 
+            border-left: 5px solid #F1C40F; 
+            padding-left: 15px; 
+            background-color: #FCF3CF;
+            padding: 10px 15px;
+            margin-top: 50px;
+        }
+        h3 { 
+            font-size: 18px; 
+            color: #D35400; 
+            font-style: italic; 
+            font-weight: bold;
+        }
+
+        /* Выделение кода */
+        code { 
+            font-family: 'Courier New', Courier, monospace; 
+            background-color: #EAECEE; 
+            padding: 3px 6px; 
+            border-radius: 4px; 
+            color: #C0392B; 
+            font-weight: bold; 
+            font-size: 13px;
+        }
+
+        /* Блоки контента */
+        .tldr-box { 
+            background-color: #FEF9E7; 
+            border: 1px solid #F7DC6F; 
+            padding: 20px; 
+            border-radius: 8px; 
+            margin-bottom: 25px; 
+            font-size: 15px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+        .analogy-box { 
+            background-color: #F4F6F7; 
+            border-left: 5px solid #3498DB; 
+            padding: 20px; 
+            margin-bottom: 25px; 
+            border-radius: 0 8px 8px 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        .deep-dive { 
+            background-color: #F8F9F9; 
+            border: 1px solid #D5DBDB; 
+            padding: 20px; 
+            border-radius: 8px; 
+            margin: 25px 0; 
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+        .best-practice { 
+            background-color: #E8F8F5; 
+            border-left: 5px solid #1ABC9C; 
+            padding: 20px; 
+            margin: 20px 0; 
+            border-radius: 0 8px 8px 0;
+        }
+        .exam-info {
+            background-color: #FFF3CD;
+            border-left: 5px solid #FFC107;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 0 8px 8px 0;
+        }
+
+        /* Таблицы */
+        table { 
+            width: 100%; 
+            border-collapse: collapse; 
+            margin: 25px 0; 
+            font-family: 'Segoe UI', sans-serif; 
+            font-size: 14px; 
+            background-color: #FFFFFF;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        th, td { 
+            border: 1px solid #BDC3C7; 
+            padding: 15px; 
+            text-align: left; 
+        }
+        th { 
+            background-color: #34495E; 
+            color: #FFFFFF; 
+            font-weight: 600;
+        }
+        tr:nth-child(even) { background-color: #F8F9F9; }
+        tr:hover { background-color: #FCF3CF; }
+
+        /* Контейнеры для графики */
+        .visual-container { 
+            text-align: center; 
+            background: #FFFFFF; 
+            padding: 25px; 
+            border: 1px solid #EAEDED; 
+            border-radius: 12px; 
+            margin: 30px 0; 
+            box-shadow: 0 6px 12px rgba(0,0,0,0.08); 
+        }
+        .visual-container img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+        }
+        .caption {
+            font-family: 'Arial', sans-serif;
+            font-size: 13px;
+            color: #7F8C8D;
+            margin-top: 15px;
+            font-style: italic;
+        }
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        .grid-3 {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 15px;
+        }
+        
+        /* Итоговый блок */
+        .summary-box {
+            background: linear-gradient(135deg, #FEF9E7 0%, #F9E79F 100%);
+            border: 1px solid #F1C40F;
+            padding: 30px;
+            border-radius: 12px;
+            text-align: center;
+            margin-top: 50px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+        }
+        .xp-badge {
+            display: inline-block;
+            background-color: #D4AC0D;
+            color: #FFFFFF;
+            font-weight: bold;
+            font-family: 'Segoe UI', sans-serif;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 16px;
+            margin: 15px 0;
+            box-shadow: 0 2px 5px rgba(212, 172, 13, 0.4);
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Архитектурный конспект: Основы визуализации с Power BI</h1>
+
+    <div class="tldr-box">
+        <p><strong>TL;DR:</strong> Сырые данные в виде миллионов строк таблиц не приносят пользы бизнесу, если их невозможно прочитать. <strong>Визуализация данных</strong> превращает цифры в истории. <strong>Microsoft Power BI</strong> — это корпоративный стандарт для моделирования (построения связей между таблицами) и создания интерактивных дашбордов.</p>
+    </div>
+
+    <div class="analogy-box">
+        <strong>Аналогия из жизни (Отчетность vs Навигатор):</strong><br>
+        <p>Представьте, что сырые данные базы — это огромный текстовый список GPS-координат, скорости и направления машин. Человеку невозможно понять по этому списку, где пробка. <strong>Визуализация (Power BI)</strong> — это ваш Яндекс.Навигатор, который берет эти цифры, рисует карту и красит дорогу в красный цвет. Бизнес (водитель) моментально принимает решение изменить маршрут.</p>
+    </div>
+
+    <!-- БЛОК 1: РАБОЧИЙ ПРОЦЕСС POWER BI -->
+    <h2>Модуль 1. Инфраструктура и рабочий процесс Power BI</h2>
+
+    <p>Создание корпоративного отчета — это конвейер, который всегда следует определенному шаблону: от компьютера разработчика до телефона директора.</p>
+
+    <div class="visual-container">
+        <img src="image_87951e.png" alt="Рабочий процесс Power BI">
+        <div class="caption">Рис 1. Экосистема: Desktop (Разработка) -> Service (Облачный хостинг и обновления) -> Consumers (Пользователи в Web/Mobile).</div>
+    </div>
+
+    <div class="deep-dive">
+        <h3>Элементы экосистемы Power BI в Microsoft Fabric</h3>
+        <ul>
+            <li><strong>Power BI Desktop:</strong> Бесплатное Windows-приложение. Именно здесь дата-аналитик подключается к источникам (SQL, файлы, Web), чистит данные (Power Query), строит модель (связи) и рисует графики.</li>
+            <li><strong>Power BI Service (Облако):</strong> SaaS-портал. Сюда публикуется готовый отчет (файл <code>.pbix</code>). Здесь настраивается автоматическое обновление по расписанию и совместный доступ.</li>
+            <li><strong>Режим Direct Lake:</strong> Эксклюзивная функция внутри Fabric. Позволяет Power BI мгновенно загружать в память данные из таблиц <code>Delta Parquet</code> в OneLake без физического копирования данных в саму семантильную модель! Это экономит терабайты памяти.</li>
+            <li><strong>Web-редактирование:</strong> Аналитики могут создавать и обновлять отчеты полностью в браузере.</li>
+        </ul>
+    </div>
+
+
+    <!-- БЛОК 2: МОДЕЛИРОВАНИЕ ДАННЫХ -->
+    <h2>Модуль 2. Аналитическое моделирование данных (Семантическая модель)</h2>
+
+    <div class="tldr-box">
+        <p>Чтобы Power BI мог автоматически пересчитывать суммы, таблицы нужно связать между собой. Этот процесс называется построением <strong>Семантической модели</strong>.</p>
+    </div>
+
+    <div class="visual-container">
+        <img src="image_86c665.png" alt="Схема Звезда">
+        <div class="caption">Рис 2. Схема "Звезда". Центральная таблица Фактов (Sales) окружена таблицами Измерений (Customer, Product, Time).</div>
+    </div>
+
+    <h3>Ключевые концепции моделирования:</h3>
+    
+    <table>
+        <thead>
+            <tr>
+                <th>Концепция</th>
+                <th>Описание и Применение</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><strong>Таблица Фактов (Fact Table)</strong></td>
+                <td>Содержит события (транзакции) и <em>цифры (Меры)</em>, которые мы хотим считать. Например: таблица <code>Sales</code> с колонками <code>Revenue</code> (Доход).</td>
+            </tr>
+            <tr>
+                <td><strong>Таблица Измерений (Dimension)</strong></td>
+                <td>Сущности, по которым мы будем фильтровать и группировать факты. Например: <code>Customer</code> с адресами.</td>
+            </tr>
+            <tr>
+                <td><strong>Движок VertiPaq</strong></td>
+                <td>Под капотом Power BI (в режиме импорта) использует In-Memory колоночное хранилище, агрегируя данные прямо во время запроса.</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <div class="deep-dive">
+        <h3>Под капотом: Иерархии атрибутов</h3>
+        <p>Иерархии позволяют пользователю "проваливаться" (Drill-down) от общего к частному прямо на графике одним кликом. Система сама агрегирует данные на лету.</p>
+        <div class="visual-container" style="margin-top: 15px;">
+            <img src="image_86c66a.png" alt="Иерархия агрегации">
+            <div class="caption">Рис 3. Иерархия Времени: Год -> Месяц -> День. Модель сама рассчитывает агрегации для каждого уровня.</div>
+        </div>
+    </div>
+
+
+    <!-- БЛОК 3: ТИПЫ ВИЗУАЛИЗАЦИЙ И ИИ -->
+    <h2>Модуль 3. Типы визуализаций и функции Искусственного Интеллекта</h2>
+
+    <p>Power BI включает в себя огромный набор встроенных визуализаций, каждая из которых имеет свою специфику.</p>
+
+    <div class="grid-3">
+        <div class="visual-container" style="margin: 10px 0; padding: 15px;">
+            <img src="image_864aa3.png" alt="Table and Text">
+            <div class="caption"><strong>Таблицы и Карточки:</strong> Самый простой способ показать точные цифры (KPI).</div>
+        </div>
+        <div class="visual-container" style="margin: 10px 0; padding: 15px;">
+            <img src="image_864a84.png" alt="Line Chart">
+            <div class="caption"><strong>Линейные графики:</strong> Идеально для исследования тенденций с течением времени (динамика по месяцам).</div>
+        </div>
+        <div class="visual-container" style="margin: 10px 0; padding: 15px;">
+            <img src="image_864a6b.png" alt="Pie Chart">
+            <div class="caption"><strong>Круговые диаграммы:</strong> Сравнение долей от целого. Использовать осторожно, при малом числе категорий.</div>
+        </div>
+        <div class="visual-container" style="margin: 10px 0; padding: 15px;">
+            <img src="image_864a67.png" alt="Scatter Plot">
+            <div class="caption"><strong>Точечные диаграммы:</strong> Поиск корреляций. Например, зависимость выручки от затрат на маркетинг.</div>
+        </div>
+        <div class="visual-container" style="margin: 10px 0; padding: 15px; grid-column: span 2;">
+            <img src="image_8647c2.png" alt="Map">
+            <div class="caption"><strong>Карты:</strong> Визуальное сравнение метрик по регионам. Требует правильной Data Category в модели.</div>
+        </div>
+    </div>
+
+    <div class="deep-dive" style="border-left: 5px solid #8E44AD;">
+        <h3 style="color: #8E44AD; margin-top: 0;">Визуализации на основе ИИ (AI Visuals)</h3>
+        <p>Power BI активно внедряет искусственный интеллект для облегчения работы аналитика:</p>
+        <ul>
+            <li><strong>Интеллектуальные повествования (Smart Narratives):</strong> Автоматически генерируют текстовое описание происходящего на графике, динамически меняясь при фильтрации.</li>
+            <li><strong>Copilot в Power BI:</strong> Позволяет задавать вопросы на естественном языке, чтобы ИИ сам сгенерировал страницу отчета, сводку или DAX-меру. Заменит устаревающий Q&A к 2027 году.</li>
+            <li><strong>Ключевые факторы влияния (Key Influencers):</strong> Машинное обучение "под капотом", которое находит, какие именно параметры сильнее всего влияют на рост или падение целевой метрики.</li>
+            <li><strong>Дерево декомпозиции:</strong> Позволяет интерактивно разбивать показатель на составляющие по любым измерениям.</li>
+        </ul>
+    </div>
+
+
+    <!-- БЛОК 4: ПРАКТИЧЕСКАЯ ЛАБОРАТОРИЯ -->
+    <h2>Модуль 4. Практическая лаборатория (Создание интерактивного дашборда)</h2>
+
+    <div class="tldr-box">
+        <p><strong>Цель лабы:</strong> Импортировать CSV файлы, связать их в семантическую модель и построить отчет с перекрестным выделением (Cross-highlighting).</p>
+    </div>
+
+    <h3>Шаг 1. Импорт данных (Get Data) и Настройка Модели</h3>
+    <p>Используем Web-коннектор для загрузки сырых файлов, затем настраиваем иерархии и форматы.</p>
+    
+    <div class="grid-2">
+        <div class="visual-container" style="margin: 10px 0; padding: 10px;">
+            <img src="image_8651ee.png" alt="Get Data Welcome">
+            <div class="caption">1. Получение данных из других источников (Get Data).</div>
+        </div>
+        <div class="visual-container" style="margin: 10px 0; padding: 10px;">
+            <img src="image_864f42.png" alt="Data Preview">
+            <div class="caption">2. Проверка данных в режиме предпросмотра и загрузка (Load).</div>
+        </div>
+        <div class="visual-container" style="margin: 10px 0; padding: 10px;">
+            <img src="image_864f05.png" alt="Format Currency">
+            <div class="caption">3. Настройка формата Revenue на Currency во вкладке Model.</div>
+        </div>
+        <div class="visual-container" style="margin: 10px 0; padding: 10px;">
+            <img src="image_864ee8.png" alt="Create Hierarchy">
+            <div class="caption">4. Создание иерархии Categorized Product.</div>
+        </div>
+        <div class="visual-container" style="margin: 10px 0; padding: 10px; grid-column: span 2;">
+            <img src="image_864ea3.png" alt="Data Category City">
+            <div class="caption">5. Во вкладке Data задаем для колонки City категорию данных <strong>City</strong>. Это необходимо для корректной работы Карт.</div>
+        </div>
+    </div>
+
+    <h3>Шаг 2. Создание интерактивного отчета</h3>
+    
+    <div class="visual-container" style="margin: 15px 0; padding: 15px;">
+        <img src="image_864e89.png" alt="Enable Maps">
+        <div class="caption">Обязательный шаг: включение поддержки карт в File -> Options and Settings -> Security.</div>
+    </div>
+    
+    <div class="grid-2">
+        <div class="visual-container" style="margin: 10px 0; padding: 10px;">
+            <img src="image_864e49.png" alt="Add Revenue">
+            <div class="caption">1. Добавляем таблицу, выбирая Categorized Products и Revenue.</div>
+        </div>
+        <div class="visual-container" style="margin: 10px 0; padding: 10px;">
+            <img src="image_864e2e.png" alt="Stacked Column Chart">
+            <div class="caption">2. Превращаем таблицу в Stacked column chart.</div>
+        </div>
+        <div class="visual-container" style="margin: 10px 0; padding: 10px;">
+            <img src="image_864b45.png" alt="Pie Chart">
+            <div class="caption">3. Создаем круговую диаграмму (Pie Chart), выбирая Quantity и Category.</div>
+        </div>
+        <div class="visual-container" style="margin: 10px 0; padding: 10px;">
+            <img src="image_864b24.jpg" alt="Map">
+            <div class="caption">4. Добавляем Карту, используя поле City и Revenue. Гео-теги из модели разместят точки.</div>
+        </div>
+    </div>
+
+    <div class="deep-dive" style="border-left: 5px solid #2ECC71;">
+        <h3 style="color: #27AE60; margin-top: 0;">Магия Cross-highlighting (Перекрестное выделение)</h3>
+        <p>В Power BI визуальные элементы автоматически связаны. Если вы кликните на карте на конкретный город (например, Лондон), все остальные графики мгновенно отфильтруются и выделят долю выручки, приходящуюся только на этот город.</p>
+        <div class="visual-container" style="margin-top: 15px;">
+            <img src="image_864b20.jpg" alt="Cross Highlighting">
+            <div class="caption">Рис. Перекрестное выделение в действии: выбор города на карте фильтрует данные в круговой диаграмме и столбчатом графике.</div>
+        </div>
+        <div class="visual-container" style="margin-top: 15px;">
+            <img src="image_8647bd.png" alt="Final Dashboard">
+            <div class="caption">Рис. Финальный интерактивный отчет (Дашборд). Готов к публикации в Power BI Service в виде файла .pbix.</div>
+        </div>
+    </div>
+
+
+    <!-- ИТОГИ И СЕРТИФИКАЦИЯ -->
+    <div class="summary-box">
+        <h2 style="border: none; background: none; color: #2C3E50; margin: 0; padding: 0;">Сводка, Итоги и Сертификация</h2>
+        <div class="xp-badge">Завершено | Получено XP: 100</div>
+        
+        <div style="text-align: left; background: #FFFFFF; padding: 25px; border-radius: 8px; margin-top: 20px;">
+            <p><strong>Визуализация и моделирование данных позволяют организациям извлекать мгновенные инсайты из сухих цифр.</strong></p>
+            
+            <p>В этом модуле вы успешно научились выполнять следующие задачи:</p>
+            <ul style="color: #333; line-height: 1.8;">
+                <li><strong>Архитектура:</strong> Описание высокоуровневого процесса создания решений (Power BI Desktop -> Service -> Consumers).</li>
+                <li><strong>Моделирование:</strong> Освоение принципов построения аналитических моделей (Схемы Звезда, Таблицы Фактов и Измерений, Движок агрегации).</li>
+                <li><strong>Визуализация и ИИ:</strong> Определение подходящих типов графиков и использование встроенного ИИ (Copilot, Ключевые факторы влияния).</li>
+                <li><strong>Практика (Desktop):</strong> Создание интерактивного отчета с применением иерархий, карт и перекрестного выделения (Cross-highlighting).</li>
+            </ul>
+
+            <div class="exam-info">
+                <h3 style="color: #D35400; font-size: 18px; margin-top: 0;">Дальнейшие шаги: Сертификация PL-300</h3>
+                <p style="color: #555;">Старый экзамен <strong>DA-100</strong> был официально отменен и заменен на актуальный <strong>PL-300: Microsoft Power BI Data Analyst</strong>. Это золотой стандарт для аналитиков данных, работающих в экосистеме Microsoft.</p>
+                <p><strong>Особенности сертификации и прокторинга:</strong></p>
+                <ul style="color: #555; line-height: 1.6;">
+                    <li><strong>Онлайн-экзамены (Pearson VUE):</strong> Вы можете сдать экзамен из дома. Это требует строгого контроля (через веб-камеру и микрофон). Запрещено использовать телефоны (уберите их из зоны досягаемости, но оставьте звук, если проктор будет звонить), иметь на столе книги, блокноты или еду. Во время экзамена применяется контроль с использованием ИИ (проверка лиц и аномалий поведения). Запись экрана и аудио ведется непрерывно.</li>
+                    <li><strong>Ежегодное бесплатное продление:</strong> Срок действия сертификата Associate истекает через 12 месяцев. Однако Microsoft позволяет <strong>бесплатно</strong> продлить его еще на один год. Окно для продления открывается за шесть месяцев до окончания срока действия. Продление представляет собой небольшую онлайн-оценку (без проктора) на сайте Microsoft Learn (около 45 минут).</li>
+                </ul>
+            </div>
+            
+            <div style="background: #FEF9E7; border-left: 4px solid #F1C40F; padding: 15px; margin-top: 20px;">
+                <strong>Важное замечание:</strong><br>
+                Обязательно регистрируйтесь на экзамены <em>только с личной учетной записью Microsoft (MSA)</em>, а не с рабочей. Иначе при смене работодателя вы навсегда потеряете свой сертификационный профиль.
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>

@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Архитектурный конспект: Введение в Инженерию Данных</title>
+    <style>
+        /* Базовые стили: Светлая тема, черный текст, Times New Roman 14px */
+        body {
+            font-family: 'Times New Roman', Times, serif;
+            font-size: 14px;
+            color: #000000;
+            background-color: #FAFAFA;
+            line-height: 1.6;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        /* Заголовки */
+        h1, h2, h3, h4 {
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            color: #2C3E50;
+            margin-top: 1.5em;
+            margin-bottom: 0.5em;
+        }
+        h1 { 
+            font-size: 30px; 
+            text-transform: uppercase; 
+            border-bottom: 3px solid #3498DB; 
+            padding-bottom: 12px; 
+            color: #2980B9; 
+            text-align: center;
+        }
+        h2 { 
+            font-size: 24px; 
+            color: #27AE60; 
+            border-left: 5px solid #2ECC71; 
+            padding-left: 15px; 
+            background-color: #EAFAF1;
+            padding: 10px 15px;
+            margin-top: 50px;
+        }
+        h3 { 
+            font-size: 18px; 
+            color: #8E44AD; 
+            font-style: italic; 
+            font-weight: bold;
+        }
+
+        /* Выделение кода */
+        code { 
+            font-family: 'Courier New', Courier, monospace; 
+            background-color: #EAECEE; 
+            padding: 3px 6px; 
+            border-radius: 4px; 
+            color: #C0392B; 
+            font-weight: bold; 
+            font-size: 13px;
+        }
+
+        /* Блоки контента */
+        .tldr-box { 
+            background-color: #EBF5FB; 
+            border: 1px solid #AED6F1; 
+            padding: 20px; 
+            border-radius: 8px; 
+            margin-bottom: 25px; 
+            font-size: 15px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+        .analogy-box { 
+            background-color: #FEF9E7; 
+            border-left: 5px solid #F1C40F; 
+            padding: 20px; 
+            margin-bottom: 25px; 
+            border-radius: 0 8px 8px 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        .deep-dive { 
+            background-color: #F8F9F9; 
+            border: 1px solid #D5DBDB; 
+            padding: 20px; 
+            border-radius: 8px; 
+            margin: 25px 0; 
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+
+        /* Таблицы */
+        table { 
+            width: 100%; 
+            border-collapse: collapse; 
+            margin: 25px 0; 
+            font-family: 'Segoe UI', sans-serif; 
+            font-size: 14px; 
+            background-color: #FFFFFF;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        th, td { 
+            border: 1px solid #BDC3C7; 
+            padding: 15px; 
+            text-align: left; 
+        }
+        th { 
+            background-color: #34495E; 
+            color: #FFFFFF; 
+            font-weight: 600;
+        }
+        tr:nth-child(even) { background-color: #F8F9F9; }
+        tr:hover { background-color: #EBF5FB; }
+
+        /* Контейнеры для графики */
+        .visual-container { 
+            text-align: center; 
+            background: #FFFFFF; 
+            padding: 25px; 
+            border: 1px solid #EAEDED; 
+            border-radius: 12px; 
+            margin: 30px 0; 
+            box-shadow: 0 6px 12px rgba(0,0,0,0.08); 
+        }
+        .visual-container img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+        }
+        .caption {
+            font-family: 'Arial', sans-serif;
+            font-size: 13px;
+            color: #7F8C8D;
+            margin-top: 15px;
+            font-style: italic;
+        }
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        .grid-3 {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 20px;
+        }
+        
+        /* Итоговый блок */
+        .summary-box {
+            background: linear-gradient(135deg, #F0F3F4 0%, #E5E8E8 100%);
+            border: 1px solid #CCD1D1;
+            padding: 30px;
+            border-radius: 12px;
+            text-align: center;
+            margin-top: 50px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+        }
+        .xp-badge {
+            display: inline-block;
+            background-color: #3498DB;
+            color: #FFFFFF;
+            font-weight: bold;
+            font-family: 'Segoe UI', sans-serif;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 16px;
+            margin: 15px 0;
+            box-shadow: 0 2px 5px rgba(52, 152, 219, 0.4);
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Архитектурный конспект: Начало работы с проектированием данных в Azure</h1>
+
+    <div class="tldr-box">
+        <p><strong>TL;DR:</strong> <strong>Инженер данных (Data Engineer)</strong> — это архитектор и строитель фундамента для всей аналитики в компании. Он отвечает за то, чтобы сырые, разрозненные данные (структурированные и неструктурированные) были надежно собраны, очищены, преобразованы и сложены в высокопроизводительные хранилища (Lakehouse, Data Warehouse), где их смогут использовать дата-аналитики и ИИ-модели.</p>
+    </div>
+
+    <!-- БЛОК 1: ТИПЫ ДАННЫХ -->
+    <h2>Модуль 1. Типы обрабатываемых данных</h2>
+
+    <p>Инженеры данных ежедневно работают с разнородными системами, которые генерируют информацию в разных форматах. В архитектуре выделяют три основных типа данных:</p>
+
+    <div class="visual-container">
+        <img src="image_764f44.png" alt="Типы данных">
+        <div class="caption">Рис 1. Слева направо: Структурированные (Таблицы), Полуструктурированные (JSON), Неструктурированные (Документы).</div>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Тип данных</th>
+                <th>Описание и структура</th>
+                <th>Примеры</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><strong>Структурированные</strong></td>
+                <td>Имеют жесткую, заранее определенную схему. Данные строго выровнены по строкам и столбцам.</td>
+                <td>Реляционные БД (SQL Server), плоские CSV-файлы со строгой типизацией.</td>
+            </tr>
+            <tr>
+                <td><strong>Полуструктурированные</strong></td>
+                <td>Имеют иерархию или теги, но не обязаны вписываться в жесткую таблицу. Часто требуют "сглаживания" (flattening) перед аналитикой.</td>
+                <td>Файлы <code>JSON</code>, <code>XML</code>, <code>YAML</code>, базы данных NoSQL (Azure Cosmos DB).</td>
+            </tr>
+            <tr>
+                <td><strong>Неструктурированные</strong></td>
+                <td>Не имеют предопределенной схемы или табличной структуры вообще. Часто обрабатываются методами машинного обучения.</td>
+                <td>PDF-документы, изображения, видео, аудиофайлы, свободный текст.</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <!-- БЛОК 2: ОПЕРАЦИИ С ДАННЫМИ -->
+    <h2>Модуль 2. Основные операции инженера данных (Data Operations)</h2>
+
+    <p>Работа инженера заключается в создании конвейеров (pipelines), которые автоматизируют движение данных. Выделяют три ключевых этапа:</p>
+
+    <div class="grid-3">
+        <div class="visual-container" style="margin-top: 10px; padding: 15px;">
+            <img src="image_764f3d.png" alt="Интеграция данных">
+            <div class="caption"><strong>1. Интеграция данных:</strong><br>Установка защищенных связей (Linked Services) между операционными базами (источниками) и аналитическими системами для безопасного извлечения.</div>
+        </div>
+        <div class="visual-container" style="margin-top: 10px; padding: 15px;">
+            <img src="image_764f24.png" alt="Преобразование данных">
+            <div class="caption"><strong>2. Преобразование (ETL/ELT):</strong><br>Парсинг JSON, очистка от дублей, фильтрация и приведение сырых операционных данных к удобному для аналитики формату.</div>
+        </div>
+        <div class="visual-container" style="margin-top: 10px; padding: 15px;">
+            <img src="image_764f08.png" alt="Консолидация данных">
+            <div class="caption"><strong>3. Консолидация:</strong><br>Слияние (Merge) потоков из десятков разных систем (ERP, CRM, логи) в единое централизованное хранилище или Озеро данных.</div>
+        </div>
+    </div>
+
+    <!-- БЛОК 3: ИНСТРУМЕНТАРИЙ -->
+    <h2>Модуль 3. Языки программирования инженера данных</h2>
+
+    <p>В отличие от аналитиков, которые в основном работают с BI-инструментами и DAX, инженеры данных должны свободно владеть скриптовыми языками для написания трансформаций и оркестрации:</p>
+
+    <ul>
+        <li><strong>SQL:</strong> Классический и обязательный язык для манипуляции табличными данными (<code>SELECT</code>, <code>INSERT</code>, <code>UPDATE</code>, <code>DELETE</code>).</li>
+        <li><strong>Python (PySpark):</strong> Стандарт де-факто для Big Data. Используется в Jupyter/Fabric ноутбуках для описания сложной логики преобразований, которая затем выполняется распределенно на кластерах <strong>Apache Spark</strong>.</li>
+        <li><strong>KQL (Kusto Query Language):</strong> Мощнейший язык Microsoft для мгновенного полнотекстового поиска и агрегации высокоскоростных потоковых данных (логов, телеметрии IoT) в службах <em>Azure Data Explorer</em> и <em>Fabric Real-Time Intelligence</em>.</li>
+    </ul>
+
+    <!-- БЛОК 4: ФУНДАМЕНТАЛЬНЫЕ КОНЦЕПЦИИ -->
+    <h2>Модуль 4. Архитектурные концепции хранения и обработки</h2>
+
+    <div class="deep-dive">
+        <h3>Операционные (OLTP) vs Аналитические (OLAP) данные</h3>
+        <p>Инженер данных работает на стыке двух миров. Он <strong>извлекает</strong> данные из операционных систем (баз данных приложений, которые пишут транзакции в реальном времени), <strong>трансформирует</strong> их и <strong>загружает</strong> в аналитические системы (оптимизированные для чтения миллионов строк аналитиками).</p>
+    </div>
+
+    <div class="grid-3">
+        <div class="visual-container" style="margin: 10px 0; padding: 15px;">
+            <img src="image_764be2.png" alt="Озеро данных">
+            <div class="caption"><strong>Озера данных (Data Lakes):</strong><br>Дешевое хранилище для гигантских объемов (петабайты) сырых данных в любых форматах без предварительной схемы (Schema-on-read).</div>
+        </div>
+        <div class="visual-container" style="margin: 10px 0; padding: 15px;">
+            <img src="image_764bde.png" alt="Хранилище данных">
+            <div class="caption"><strong>Хранилища данных (Data Warehouses):</strong><br>Дорогие, но сверхбыстрые реляционные СУБД. Данные строго структурированы (Звезда/Снежинка) и оптимизированы для SQL-запросов.</div>
+        </div>
+        <div class="visual-container" style="margin: 10px 0; padding: 15px;">
+            <img src="image_764bd9.png" alt="Apache Spark">
+            <div class="caption"><strong>Apache Spark & Lakehouse:</strong><br>Spark — это движок параллельной обработки в памяти. Lakehouse объединяет дешевизну Озера и транзакционность Хранилища (ACID) с помощью формата Delta Lake.</div>
+        </div>
+    </div>
+
+    <h3>Конвейеры (Pipelines) и Потоки (Streaming)</h3>
+    <p>Для автоматизации движения данных инженеры строят <strong>Конвейеры (Data Pipelines)</strong> — оркестраторы процессов ETL/ELT, которые запускаются по расписанию или по событию.</p>
+    <p>Однако не все данные могут ждать ночной пакетной загрузки. Для телеметрии устройств Интернета вещей (IoT) или фидов социальных сетей применяется <strong>Потоковая передача данных (Streaming)</strong>, которая захватывает данные и в реальном времени объединяет их с историческими пакетами.</p>
+
+    <!-- БЛОК 5: ПРОЕКТИРОВАНИЕ ДАННЫХ В AZURE -->
+    <h2>Модуль 5. Экосистема проектирования данных в Azure</h2>
+
+    <p>Microsoft Azure включает широкую экосистему служб для маршрутизации, хранения и обработки потоков данных корпоративного уровня.</p>
+
+    <div class="visual-container">
+        <img src="image_764b84.jpg" alt="Архитектура проектирования данных в Azure">
+        <div class="caption">Рис 2. Конвейер корпоративной аналитики: Операционные данные (Источники) -> Прием данных (ETL) -> Хранение и обработка -> Моделирование и визуализация.</div>
+    </div>
+
+    <div class="deep-dive" style="border-left: 5px solid #2980B9;">
+        <h3 style="color: #2C3E50; margin-top: 0;">Ключевые технологии Microsoft для Data Engineering:</h3>
+        <ul>
+            <li><strong>Azure Data Factory:</strong> Главный оркестратор ETL. Позволяет визуально конструировать перемещение данных из сотен источников по расписанию.</li>
+            <li><strong>Azure Data Lake Storage Gen2 (ADLS Gen2):</strong> Фундаментальное хранилище "озера". Безопасное, масштабируемое, поддерживающее иерархическое пространство имен (POSIX).</li>
+            <li><strong>Azure Stream Analytics:</strong> Сервис для обработки горячих потоковых данных (например, от брокеров событий, таких как <em>Event Hubs</em>).</li>
+            <li><strong>Azure Databricks:</strong> PaaS-платформа на базе Apache Spark для масштабной очистки данных, инженерии и ИИ.</li>
+            <li><strong>Microsoft Fabric:</strong> Единая SaaS-платформа, которая объединяет все вышеперечисленное поверх общего озера данных <em>OneLake</em>. Включает <strong>Fabric IQ</strong> — рабочую среду для объединения бизнес-семантики и систем ИИ.</li>
+        </ul>
+    </div>
+
+    <h3>Как выбрать правильную архитектуру?</h3>
+    <p>При построении аналитического решения команды разработчиков сталкиваются с выбором ролей, хранилищ и технологий.</p>
+
+    <div class="visual-container">
+        <img src="image_6c6d9d.png" alt="Принципы выбора архитектуры">
+        <div class="caption">Рис 3. Матрица принятия решений: от обучения концепциям и распределения ролей до выбора аналитического хранилища и конкретной технологии (визуализация, потоки, прогнозирование).</div>
+    </div>
+
+    <!-- ИТОГИ -->
+    <div class="summary-box">
+        <h2 style="border: none; background: none; color: #2C3E50; margin: 0; padding: 0;">Сводка и Итоги</h2>
+        <div class="xp-badge">Завершено | Получено XP: 800</div>
+        
+        <div style="text-align: left; background: #FFFFFF; padding: 25px; border-radius: 8px; margin-top: 20px;">
+            <p><strong>Инженерия данных — это устоявшаяся отраслевая дисциплина, являющаяся фундаментом любой корпоративной аналитики.</strong></p>
+            <p>В этом модуле мы успешно разобрали базовые концепции и архитектуру Azure:</p>
+            <ul style="color: #333; line-height: 1.8;">
+                <li>Разницу между структурированными, полуструктурированными (JSON) и сырыми данными.</li>
+                <li>Суть процессов <strong>ETL/ELT</strong>: Интеграцию, Преобразование и Консолидацию.</li>
+                <li>Необходимость владения языками <strong>SQL, Python (PySpark) и KQL</strong>.</li>
+                <li>Архитектурную разницу между <strong>Data Lake</strong>, <strong>Data Warehouse</strong> и <strong>Lakehouse</strong> на базе Apache Spark.</li>
+                <li>Роль ключевых сервисов Azure, таких как <strong>Data Factory, ADLS Gen2, Databricks</strong> и <strong>Microsoft Fabric</strong> в конвейере данных (от источника до Power BI).</li>
+            </ul>
+
+            <h3 style="color: #2980B9; font-size: 18px; margin-top: 25px;">Следующие шаги (Next Steps)</h3>
+            <p style="color: #555;">Теперь, когда вы понимаете концептуальную архитектуру экосистемы Azure, мы переходим к практическому изучению фундаментального сервиса для построения озер данных.</p>
+            
+            <div style="background: #EBF5FB; border-left: 4px solid #3498DB; padding: 15px; margin-top: 20px;">
+                <strong>Следующий модуль:</strong><br>
+                <em>Общие сведения об Azure Data Lake Storage 2-го поколения</em> (Масштабируемое и безопасное облачное решение для хранилищ озера данных, оптимизированное для аналитики).
+                <br><br>
+                <strong>Практика в Azure:</strong><br>
+                Выберите подходящую вам учетную запись Azure. Используйте оплату по мере использования или попробуйте Azure бесплатно в течение 30 дней, чтобы закрепить теоретические знания на практике (Регистрация).
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>
